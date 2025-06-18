@@ -1,0 +1,16 @@
+{
+  "name": "supernova-1",
+  "version": "1.0.0",
+  "description": "FE - 이상율, 정환희\r BE - 김규진, 이승언, 오태헌, 박현수",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ejs": "^3.1.10",
+    "express": "^5.1.0"
+  }
+}
