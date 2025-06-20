@@ -1,63 +1,5 @@
-@font-face {
-	font-family: "KD";
-	font-style: normal;
-	font-weight: 300;
-	src: url(//cdn.jsdelivr.net/npm/font-kopub@1.0/fonts/KoPubDotum-Light.eot);
-	src: url(//cdn.jsdelivr.net/npm/font-kopub@1.0/fonts/KoPubDotum-Light.eot?#iefix) format("embedded-opentype"),
-		url(//cdn.jsdelivr.net/npm/font-kopub@1.0/fonts/KoPubDotum-Light.woff) format("woff"),
-		url(//cdn.jsdelivr.net/npm/font-kopub@1.0/fonts/KoPubDotum-Light.ttf) format("truetype");
-}
-@font-face {
-	font-family: "KD";
-	font-style: normal;
-	font-weight: 500;
-	src: url(//cdn.jsdelivr.net/npm/font-kopub@1.0/fonts/KoPubDotum-Medium.eot);
-	src: url(//cdn.jsdelivr.net/npm/font-kopub@1.0/fonts/KoPubDotum-Medium.eot?#iefix) format("embedded-opentype"),
-		url(//cdn.jsdelivr.net/npm/font-kopub@1.0/fonts/KoPubDotum-Medium.woff) format("woff"),
-		url(//cdn.jsdelivr.net/npm/font-kopub@1.0/fonts/KoPubDotum-Medium.ttf) format("truetype");
-}
-@font-face {
-	font-family: "KD";
-	font-style: normal;
-	font-weight: 700;
-	src: url(//cdn.jsdelivr.net/npm/font-kopub@1.0/fonts/KoPubDotum-Bold.eot);
-	src: url(//cdn.jsdelivr.net/npm/font-kopub@1.0/fonts/KoPubDotum-Bold.eot?#iefix) format("embedded-opentype"),
-		url(//cdn.jsdelivr.net/npm/font-kopub@1.0/fonts/KoPubDotum-Bold.woff) format("woff"),
-		url(//cdn.jsdelivr.net/npm/font-kopub@1.0/fonts/KoPubDotum-Bold.ttf) format("truetype");
-}
-@font-face {
-	font-family: "GM";
-	src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansLight.woff") format("woff");
-	font-weight: 300;
-	font-style: normal;
-}
-@font-face {
-	font-family: "GM";
-	src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff") format("woff");
-	font-weight: 500;
-	font-style: normal;
-}
-@font-face {
-	font-family: "GM";
-	src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff") format("woff");
-	font-weight: 700;
-	font-style: normal;
-}
-* {
-	margin: 0;
-	padding: 0;
-	box-sizing: border-box;
-	font-family: KD;
-}
-
-body {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	min-height: 100vh;
-	background-size: cover;
-	background-position: center;
-}
+@import url("base.css");
+@import url("font.css");
 
 .wrapper {
 	width: 26.25em;
@@ -100,7 +42,7 @@ body {
 .wrapper .btn {
 	width: 100%;
 	height: 2.8125em;
-	background: #62b66d;
+	background: #d33b2e;
 	border: none;
 	outline: none;
 	border-radius: 2.5em;
@@ -108,12 +50,12 @@ body {
 	cursor: pointer;
 	font-size: 1em;
 	color: #ffffff;
-	font-weight: 600;
+	font-weight: 300;
 	margin-bottom: 1.25em;
 }
 
 .wrapper .btn:hover {
-	background: #418a4a;
+	background: #97261c;
 }
 
 .wrapper .register-link {
@@ -132,11 +74,10 @@ body {
 	text-decoration: underline;
 }
 
-.kjdlogo {
+.supernova {
 	margin: 0;
 	padding-top: 0;
 	padding-bottom: 0.2em;
-	text-align: center;
 	display: block;
 	margin-left: auto;
 	margin-right: auto;

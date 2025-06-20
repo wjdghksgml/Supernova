@@ -3,12 +3,21 @@
 	<head>
 		<meta charset="UTF-8" />
 		<title>Welcome</title>
-		<link rel="stylesheet" href="/public/main_style.css" />
+		<link rel="stylesheet" href="/public/index_styles.css" />
+		<link rel="icon" type="image/x-icon" href="/public/favicon.png" />
 	</head>
 	<body>
-		<h1>🌟 Welcome to Supernova Project</h1>
-		<p>This is the homepage rendered by <strong>EJS</strong>.</p>
-		<a href="/login" class="btn">로그인</a>
-		<a href="/register" class="btn">회원가입</a>
+		<div class="container">
+			<div class="logo-container">
+				<a href="/"><img src="/public/logo.png" alt="Logo" /></a>
+			</div>
+
+			<div class="main-content">
+				<h1>노트북 대여 현황</h1>
+				<p>This is the homepage rendered by <strong>EJS</strong>.</p>
+				<a href="/login" class="btn">로그인</a>
+				<a href="/register" class="btn">회원가입</a>
+			</div>
+		</div>
 	</body>
 </html>
