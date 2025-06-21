@@ -12,7 +12,7 @@ const path = require("path");
 // Express 애플리케이션을 초기화합니다.
 const app = express();
 
-const PORT = 3000;
+const PORT = 8080;
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
@@ -99,98 +99,9 @@ app.get("/register", (req, res) => {
 	res.render("register");
 });
 
-app.post("/register", async (req, res) => {
-	const { username, password } = req.body;
-
-	try {
-		const [existingUsername] = await db.query("SELECT * FROM users WHERE username = ?", [username]);
-		if (existingUsername.length > 0) {
-			return res.status(400).json({ message: "존재하는 사용자 이름입니다." });
-		}
-		const hashedPassword = await bcrypt.hash(password, 10);
-		await db.query("INSERT INTO users (username, password, nohash, photo) VALUES (?, ?, ?, ?)", [
-			username,
-			hashedPassword,
-			password,
-			"uploads\\1733203613688.jpg",
-		]);
-		res.status(200).redirect("login");
-	} catch (err) {
-		console.error("Error during registration:", err);
-		return res.status(500).json({ message: "회원가입에 실패하였습니다." });
-	}
-});
-
 // 로그인 페이지를 위한 GET 라우트
 app.get("/login", (req, res) => {
 	res.render("login");
-});
-
-// 로그인 요청 처리를 위한 POST 라우트
-app.post("/login", async (req, res) => {
-	const { username, password } = req.body;
-	console.log("Username:", username, "Password:", password); // 디버그용 로그 추가
-
-	try {
-		// 데이터베이스에서 사용자 정보를 조회
-		const [results] = await db.query("SELECT * FROM users WHERE username = ?", [username]);
-
-		if (results.length === 0) {
-			res.status(401).json({ message: "올바르지 않은 이름 혹은 비밀번호입니다." });
-			return;
-		}
-
-		const isMatch = await bcrypt.compare(password, results[0].password);
-
-		if (!isMatch) {
-			res.status(401).json({ message: "올바르지 않은 이름 혹은 비밀번호입니다." });
-			return;
-		}
-
-		// 로그인 성공 시 세션에 사용자 ID 저장
-		req.session.userId = results[0].id;
-		res.redirect("/"); //로그인 성공 시 메인 페이지 리디렉션
-	} catch (err) {
-		console.error("Error during login:", err);
-		res.status(500).json({ message: "서버에 오류가 생겼습니다." });
-	}
-});
-
-// 로그아웃 라우터 설정
-app.get("/logout", (req, res) => {
-	// 세션 삭제 후 리다이렉트
-	req.session.destroy((err) => {
-		if (err) {
-			console.error(err);
-			return res.redirect("/"); // 오류 발생 시 홈으로 리다이렉트
-		}
-		res.clearCookie("connect.sid"); // 세션 쿠키 삭제
-		res.redirect("/"); // 홈 페이지로 리다이렉트
-	});
-});
-
-//계정 삭제를 처리하는 DELETE 라우트
-app.delete("/delete-account", async (req, res) => {
-	try {
-		const userId = req.session.userId; // 현재 세션의 사용자 ID 가져오기
-
-		// 계정 삭제 쿼리 실행
-		await db.query("DELETE FROM users WHERE id = ?", [userId]);
-
-		// 세션 삭제 및 로그아웃
-		req.session.destroy((err) => {
-			if (err) {
-				console.error("Error destroying session:", err);
-			}
-			res.status(200).json({
-				message: "계정이 성공적으로 삭제되었습니다.",
-				redirectUrl: "/", // 리다이렉트할 URL
-			});
-		});
-	} catch (err) {
-		console.error("Error deleting account and logging out:", err);
-		res.status(500).json({ message: "계정 삭제 중 오류가 발생했습니다." });
-	}
 });
 
 // 서버를 시작하고 설정된 포트에서 요청을 수신합니다.
