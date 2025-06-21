@@ -12,7 +12,7 @@ const path = require("path");
 // Express 애플리케이션을 초기화합니다.
 const app = express();
 
-const PORT = 8080;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
