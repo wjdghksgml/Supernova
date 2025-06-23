@@ -94,14 +94,25 @@ app.get("/", (req, res) => {
 	res.render("index");
 });
 
-//회원가입 페이지를 위한 GET 라우트
-app.get("/register", (req, res) => {
-	res.render("register");
-});
+//페이지 불러오기
+// views 폴더 내 .ejs 파일 이름들을 자동으로 읽어서 allowedPages에 저장
+const fs = require("fs");
+const pathpage = require("path");
 
-// 로그인 페이지를 위한 GET 라우트
-app.get("/login", (req, res) => {
-	res.render("login");
+// views 폴더 내 .ejs 파일 이름들을 자동으로 읽어서 allowedPages에 저장
+const viewsDir = path.join(__dirname, "views");
+const allowedPages = fs
+	.readdirSync(viewsDir)
+	.filter((file) => path.extname(file) === ".ejs")
+	.map((file) => path.basename(file, ".ejs")); // 확장자 제거
+
+app.get("/:page", (req, res) => {
+	const pageName = req.params.page;
+	if (allowedPages.includes(pageName)) {
+		res.render(pageName);
+	} else {
+		res.status(404).render("404");
+	}
 });
 
 // 서버를 시작하고 설정된 포트에서 요청을 수신합니다.

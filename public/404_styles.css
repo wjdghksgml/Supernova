@@ -52,87 +52,62 @@ body {
 	margin-top: 0;
 }
 
-.login-box {
+.center-404 {
+	text-align: center;
+	color: #ae2ee9;
+	font-family: Gmarket Sans, sans-serif;
+	margin-top: 60px;
 	background: linear-gradient(to bottom right, rgba(212, 185, 233, 0.6), rgba(217, 164, 255, 0.6), rgba(205, 134, 255, 0.6));
 	border: 2px solid rgba(255, 255, 255, 0.3); /* 흐릿한 테두리 */
-	padding: 40px;
+	padding: 25px;
 	border-radius: 20px;
 	box-shadow: 0 8px 20px rgba(100, 0, 200, 0.2);
 	text-align: center;
-	width: 280px;
-	height: 280px;
+	width: clam(280px, 50vw, 600px);
+	height: auto;
 	position: relative;
 	backdrop-filter: blur(2px);
 }
-
-.login-box .icon {
-	position: absolute;
-	top: -35px;
-	left: calc(50% - 35px);
-	width: 70px;
-	height: 70px;
-	background: #ae2ee9;
-	border-radius: 50%;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	color: white;
-	font-size: 30px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+.center-404 h1 {
+	font-size: 128px;
+	margin: 0;
+	font-weight: 900;
+	text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+	font-family: Pretendard, sans-serif;
+	font-weight: 900;
+	text-shadow: 1.5px 1.5px 3px rgb(255, 255, 255);
 }
-
-.login-box h2 {
-	margin: 10px;
-	margin-bottom: 20px;
-	font-size: 28px;
-	color: rgba(255, 255, 255);
+.center-404 h3 {
+	font-size: 36px;
 	font-weight: 700;
+	margin-top: 0;
+	color: #ae2ee9;
+	font-family: Pretendard, sans-serif;
+	font-weight: 600;
+}
+.center-404 p {
+	font-size: 16px;
+	color: white;
+	margin-top: 12px;
+	font-family: Pretendard, sans-serif;
+	font-weight: 500;
 	text-shadow: 1.5px 1.5px 3px rgba(0, 0, 0, 0.2);
 }
-
-.login-box input {
-	height: 24px;
-	width: 240px;
-	padding: 12px;
-	padding-left: 24px;
-	margin-bottom: 15px;
-	border: none;
-	border-radius: 30px;
-	font-size: 14px;
-	outline: none;
-}
-
-.login-box button {
-	width: 276px;
-	padding: 12px;
-	margin-top: 20px;
+.center-404 a button {
+	margin-top: 30px;
+	padding: 12px 30px;
 	background-color: #ae2ee9;
 	color: white;
 	border: none;
 	border-radius: 30px;
 	font-size: 16px;
-	font-weight: bold;
+	font-weight: 600;
 	cursor: pointer;
 	transition: background-color 0.3s;
-}
-
-.login-box button:hover {
-	background-color: #7d40df;
-}
-
-.login-box .bottom-text {
-	margin-top: 20px;
-	font-size: 14px;
-	color: rgba(255, 255, 255, 1);
 	text-shadow: 1.5px 1.5px 3px rgba(0, 0, 0, 0.2);
 }
-
-.login-box .bottom-text a {
-	text-shadow: none;
-	margin-left: 8px;
-	color: rgba(255, 255, 255, 1);
-	text-decoration: none;
-	font-weight: 600;
+.center-404 a button:hover {
+	background-color: #7d40df;
 }
 
 footer {
