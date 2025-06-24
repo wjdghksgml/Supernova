@@ -25,20 +25,23 @@ header h1 {
 
 .dashboard {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 	gap: 20px;
 	padding: 40px;
 	padding-left: 5%;
 	padding-right: 5%;
+	place-items: center;
 }
 
 .card {
 	background-color: white;
 	border-radius: 16px;
 	padding: 24px;
-	box-shadow: 0 4px 12px rgba(100, 0, 200, 0.1);
+	box-shadow: 2px 2px 9px #ae2ee965;
 	transition: transform 0.2s ease;
 	cursor: pointer;
+	width: 90%;
+	max-width: 800px;
+	min-width: 240px;
 }
 
 .card:hover {

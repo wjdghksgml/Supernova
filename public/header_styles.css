@@ -31,7 +31,7 @@ a {
 	padding-left: 64px;
 	padding-right: 64px;
 	align-items: center;
-	box-shadow: 0 4px 12px rgba(100, 0, 200, 0.1);
+	box-shadow: 0 2px 9px #ae2ee965;
 }
 
 .grid-item {
