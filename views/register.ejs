@@ -16,9 +16,11 @@
 		<div class="login-box">
 			<div class="icon">αω</div>
 			<h2>Register</h2>
-			<input type="text" placeholder="이름" />
-			<input type="text" placeholder="학번" />
-			<button>회원가입</button>
+			<form action="/register" method="POST">
+				<input type="text" name="name" placeholder="이름" required />
+				<input type="text" name="studentId" placeholder="학번" required />
+				<button type="submit">회원가입</button>
+			</form>
 			<div class="bottom-text">이미 계정이 있으신가요? <a href="/login">로그인</a></div>
 		</div>
 
