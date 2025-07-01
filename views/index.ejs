@@ -8,30 +8,35 @@
 		<title>노트북 대여 시스템</title>
 	</head>
 	<body>
-		<header>
-			<h1>HAVEN CHRISTIAN SCHOOL | 노트북 대여 시스템</h1>
-			<div class="user-info">이상율님 | <a href="#">로그아웃</a></div>
-		</header>
+		<%-include("header.ejs") %>
 
 		<main class="dashboard">
-			<div class="card">
-				<h2>✅ 노트북 대여하기</h2>
-				<p>사용 가능한 노트북을 보고 바로 신청할 수 있어요.</p>
-			</div>
-			<div class="card">
-				<h2>🧾 대여 현황 확인</h2>
-				<p>내가 대여 중인 노트북과 반납 일정을 확인해요.</p>
-			</div>
-			<div class="card">
-				<h2>🛠️ 대여 기록</h2>
-				<p>과거의 대여 이력을 조회할 수 있어요.</p>
-			</div>
-			<div class="card">
-				<h2>📞 문의하기</h2>
-				<p>고장 신고나 문의를 간단하게 보낼 수 있어요.</p>
-			</div>
+			<a href="/borrow" class="card-container">
+				<div class="card">
+					<h2>✅ 노트북 대여하기</h2>
+					<p>사용 가능한 노트북을 보고 바로 신청할 수 있어요.</p>
+				</div>
+			</a>
+			<a href="/status" class="card-container">
+				<div class="card">
+					<h2>🧾 대여 현황 확인</h2>
+					<p>내가 대여 중인 노트북과 반납 일정을 확인해요.</p>
+				</div>
+			</a>
+			<a href="/history" class="card-container">
+				<div class="card">
+					<h2>🛠️ 대여 기록</h2>
+					<p>과거의 대여 이력을 조회할 수 있어요.</p>
+				</div>
+			</a>
+			<a href="/contact" class="card-container">
+				<div class="card">
+					<h2>📞 문의하기</h2>
+					<p>고장 신고나 문의를 간단하게 보낼 수 있어요.</p>
+				</div>
+			</a>
 		</main>
 
-		<footer>WEBSITE MADE BY <span class="footer-highlight">SUPERNOVA</span></footer>
+		<%-include("footer.ejs") %>
 	</body>
 </html>
