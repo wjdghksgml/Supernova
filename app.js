@@ -33,6 +33,7 @@ app.use("/public", express.static("public"));
 // 세션 사용자 ID를 전역으로 전달
 app.use((req, res, next) => {
 	res.locals.sessionId = req.session.userId || "none";
+	res.locals.sessionUserName = req.session.userName || "none"; // ✅ 이름도 전달
 	next();
 });
 
@@ -121,6 +122,8 @@ app.post("/login", async (req, res) => {
 		}
 
 		req.session.userId = user._id.toString();
+		req.session.userName = user.name; // ✅ 사용자 이름도 세션에 저장
+
 		res.redirect("/index");
 	} catch (err) {
 		console.error("로그인 오류:", err);

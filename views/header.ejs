@@ -13,33 +13,39 @@
 			</div>
 			<a href="/" class="title-bar"><img src="/public/logo.png" /></a>
 			<div class="grid-item" id="profile">
-				<a href="/login" id="link"><i class="" id="icon"></i></a>
-				<a href="/logout" id="logout" style="display: none"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+				<span id="userName" style="display: none; margin-right: 10px; font-weight: bold"></span>
+
+				<a href="/login" id="link"></a>
+
+				<a href="/logout" id="logout" style="display: none">
+					<i class="fa-solid fa-arrow-right-from-bracket"></i>
+				</a>
 			</div>
 		</div>
 	</body>
+
+	<script>
+		const linkElement = document.getElementById("link");
+		const writerLink = document.getElementById("writersLink");
+		const logoutLink = document.getElementById("logout");
+		const userNameSpan = document.getElementById("userName");
+
+		const serverUserID = "<%= sessionId %>"; // 유저 ID (없으면 "none")
+		const serverUserName = "<%= sessionUserName %>"; // 유저 이름 (없으면 "none")
+
+		if (serverUserID === "none") {
+			linkElement.href = "/login";
+			linkElement.textContent = "로그인";
+			writerLink.style.display = "none";
+			logoutLink.style.display = "none";
+			userNameSpan.style.display = "none";
+		} else {
+			linkElement.href = "/profile/<%= sessionId %>";
+			linkElement.textContent = ""; // 이름은 별도 span으로
+			writerLink.style.display = "inline";
+			logoutLink.style.display = "inline";
+			userNameSpan.style.display = "inline";
+			userNameSpan.textContent = `${serverUserName}님`;
+		}
+	</script>
 </html>
-
-<script>
-	const iconElement = document.getElementById("icon");
-	const linkElement = document.getElementById("link");
-	const writerLink = document.getElementById("writersLink");
-	const logoutLink = document.getElementById("logout");
-	const serverUserID = "<%= sessionId %>";
-	console.log("userid : ", serverUserID);
-
-	// API 호출 및 처리
-	if (serverUserID == "none") {
-		// Null인 경우 로그인 아이콘과 링크를 표시하고, 로그아웃 및 글쓰기 아이콘은 숨김
-		iconElement.className = "fas fa-user"; // 1번 아이콘의 경로
-		linkElement.href = "/login"; // 1번 링크
-		writerLink.style.display = "none"; // 글쓰기 아이콘 숨기기
-		logoutLink.style.display = "none"; // 로그아웃 아이콘 숨기기
-	} else {
-		// Null이 아닌 경우 프로필 아이콘과 링크를 표시하고, 로그아웃 및 글쓰기 아이콘을 표시
-		iconElement.className = "fas fa-bars"; // 1번 아이콘의 경로
-		linkElement.href = "/profile/<%= sessionId %>"; // 2번 링크
-		writerLink.style.display = "inline"; // 글쓰기 아이콘 보이기
-		logoutLink.style.display = "inline"; // 로그아웃 아이콘 보이기
-	}
-</script>
