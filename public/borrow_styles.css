@@ -1,0 +1,67 @@
+.form-box {
+	/* login-box 스타일 그대로 복사 */
+	background: linear-gradient(to bottom right, rgba(212, 185, 233, 0.6), rgba(217, 164, 255, 0.6), rgba(205, 134, 255, 0.6));
+	border: 2px solid rgba(255, 255, 255, 0.3);
+	padding: 40px;
+	border-radius: 20px;
+	box-shadow: 0 8px 20px rgba(100, 0, 200, 0.2);
+	text-align: center;
+	width: 280px;
+	height: auto; /* 높이는 유동적으로 */
+	position: relative;
+	backdrop-filter: blur(2px);
+}
+
+.form-box .icon {
+	position: absolute;
+	top: -35px;
+	left: calc(50% - 35px);
+	width: 70px;
+	height: 70px;
+	background: #ae2ee9;
+	border-radius: 50%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: white;
+	font-size: 30px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.form-box h2 {
+	margin: 10px;
+	margin-bottom: 20px;
+	font-size: 28px;
+	color: rgba(255, 255, 255);
+	font-weight: 700;
+	text-shadow: 1.5px 1.5px 3px rgba(0, 0, 0, 0.2);
+}
+
+.form-box input {
+	height: 24px;
+	width: 240px;
+	padding: 12px 24px;
+	margin-bottom: 15px;
+	border: none;
+	border-radius: 30px;
+	font-size: 14px;
+	outline: none;
+}
+
+.form-box button {
+	width: 276px;
+	padding: 12px;
+	margin-top: 20px;
+	background-color: #ae2ee9;
+	color: white;
+	border: none;
+	border-radius: 30px;
+	font-size: 16px;
+	font-weight: bold;
+	cursor: pointer;
+	transition: background-color 0.3s;
+}
+
+.form-box button:hover {
+	background-color: #7d40df;
+}

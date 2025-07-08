@@ -2,12 +2,21 @@
 <html lang="ko">
 	<head>
 		<meta charset="UTF-8" />
+		<title>노트북 대여 신청</title>
 		<link rel="stylesheet" href="/public/borrow_styles.css" />
-		<link rel="icon" type="image/x-icon" href="/public/favicon.png" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>노트북 대여하기</title>
 	</head>
 	<body>
-		<%-include("header.ejs") %>
+		<%- include("header.ejs") %>
+		<div class="form-box">
+			<div class="icon">💻</div>
+			<h2>대여 신청</h2>
+			<input type="text" placeholder="이름" />
+			<input type="text" placeholder="학번" />
+			<input type="email" placeholder="이메일" />
+
+			<input type="date" placeholder="대여 시작일" />
+			<button>신청하기</button>
+		</div>
+		<%-include("footer.ejs") %>
 	</body>
 </html>
