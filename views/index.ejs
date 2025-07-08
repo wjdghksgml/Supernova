@@ -11,25 +11,25 @@
 		<%-include("header.ejs") %>
 
 		<main class="dashboard">
-			<a href="/borrow" class="card-container">
+			<a href="/borrow" class="card-container" data-auth="required">
 				<div class="card">
 					<h2>✅ 노트북 대여하기</h2>
 					<p>사용 가능한 노트북을 보고 바로 신청할 수 있어요.</p>
 				</div>
 			</a>
-			<a href="/status" class="card-container">
+			<a href="/status" class="card-container" data-auth="required">
 				<div class="card">
 					<h2>🧾 대여 현황 확인</h2>
 					<p>내가 대여 중인 노트북과 반납 일정을 확인해요.</p>
 				</div>
 			</a>
-			<a href="/history" class="card-container">
+			<a href="/history" class="card-container" data-auth="required">
 				<div class="card">
 					<h2>🛠️ 대여 기록</h2>
 					<p>과거의 대여 이력을 조회할 수 있어요.</p>
 				</div>
 			</a>
-			<a href="/contact" class="card-container">
+			<a href="/contact" class="card-container" data-auth="required">
 				<div class="card">
 					<h2>📞 문의하기</h2>
 					<p>고장 신고나 문의를 간단하게 보낼 수 있어요.</p>
@@ -39,4 +39,18 @@
 
 		<%-include("footer.ejs") %>
 	</body>
+	<script>
+		const serverUserID = "<%= sessionId %>"; // 유저 ID (없으면 "none")
+		const serverUserName = "<%= sessionUserName %>"; // 유저 이름 (없으면 "none")
+
+		// ✅ 로그인 필요 링크 차단
+		if (serverUserID === "none") {
+			document.querySelectorAll('[data-auth="required"]').forEach((link) => {
+				link.addEventListener("click", (e) => {
+					e.preventDefault(); // 링크 이동 차단
+					alert("로그인이 필요합니다!");
+				});
+			});
+		}
+	</script>
 </html>

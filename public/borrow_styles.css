@@ -1,3 +1,15 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+.form-wrapper {
+	position: fixed; /* 또는 absolute */
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 1; /* 필요시 */
+}
+
 .form-box {
 	/* login-box 스타일 그대로 복사 */
 	background: linear-gradient(to bottom right, rgba(212, 185, 233, 0.6), rgba(217, 164, 255, 0.6), rgba(205, 134, 255, 0.6));

@@ -7,16 +7,19 @@
 	</head>
 	<body>
 		<%- include("header.ejs") %>
-		<div class="form-box">
-			<div class="icon">💻</div>
-			<h2>대여 신청</h2>
-			<input type="text" placeholder="이름" />
-			<input type="text" placeholder="학번" />
-			<input type="email" placeholder="이메일" />
 
-			<input type="date" placeholder="대여 시작일" />
-			<button>신청하기</button>
+		<div class="form-wrapper">
+			<div class="form-box">
+				<div class="icon">💻</div>
+				<h2>대여 신청</h2>
+				<input type="text" placeholder="이름" />
+				<input type="text" placeholder="학번" />
+				<input type="email" placeholder="이메일" />
+				<input type="date" id="borrowDate" />
+				<button>신청하기</button>
+			</div>
 		</div>
-		<%-include("footer.ejs") %>
+
+		<%- include("footer.ejs") %>
 	</body>
 </html>
