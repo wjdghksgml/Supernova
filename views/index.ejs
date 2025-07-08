@@ -38,19 +38,16 @@
 		</main>
 
 		<%-include("footer.ejs") %>
-	</body>
-	<script>
-		const serverUserID = "<%= sessionId %>"; // 유저 ID (없으면 "none")
-		const serverUserName = "<%= sessionUserName %>"; // 유저 이름 (없으면 "none")
-
-		// ✅ 로그인 필요 링크 차단
-		if (serverUserID === "none") {
-			document.querySelectorAll('[data-auth="required"]').forEach((link) => {
-				link.addEventListener("click", (e) => {
-					e.preventDefault(); // 링크 이동 차단
-					alert("로그인이 필요합니다!");
+		<script>
+			const serverUserID = "<%= sessionId %>";
+			if (!serverUserID || serverUserID === "none") {
+				document.querySelectorAll('[data-auth="required"]').forEach((link) => {
+					link.addEventListener("click", (e) => {
+						e.preventDefault();
+						alert("로그인이 필요합니다!");
+					});
 				});
-			});
-		}
-	</script>
+			}
+		</script>
+	</body>
 </html>
