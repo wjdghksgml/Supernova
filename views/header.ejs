@@ -42,10 +42,10 @@
 		} else {
 			linkElement.href = "/profile/<%= sessionId %>";
 			linkElement.textContent = ""; // 이름은 별도 span으로
-			writerLink.style.display = "inline";
+			writerLink.style.display = "nond";
 			logoutLink.style.display = "inline";
 			userNameSpan.style.display = "inline";
-			userNameSpan.textContent = `${serverUserName}님`;
+			userNameSpan.textContent = `${serverUserName} 님`;
 		}
 	</script>
 </html>
