@@ -1,10 +1,54 @@
 <!DOCTYPE html>
-<html>
-	<head>
-		<meta charset="utf-8" />
-		<title>관리자 페이지</title>
-		<link rel="stylesheet" href="/public/admin_styles.css" />
-		<link rel="icon" type="image/x-icon" href="/public/favicon.png" />
-	</head>
-	<body></body>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>관리자 페이지 - 예약 목록</title>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #aaa;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #ddd;
+    }
+  </style>
+</head>
+<body>
+  <h1>예약 목록 (Admin)</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>이름</th>
+        <th>학번</th>
+        <th>이메일</th>
+        <th>예약 날짜</th>
+        <th>시간대</th>
+        <th>신청 시간</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (reservations && reservations.length > 0) { %>
+        <% reservations.forEach(r => { %>
+          <tr>
+            <td><%= r.name %></td>
+            <td><%= r.studentId || '-' %></td>
+            <td><%= r.email || '-' %></td>
+            <td><%= r.date %></td>
+            <td><%= r.timeSlot %></td>
+            <td><%= new Date(r.createdAt).toLocaleString("ko-KR") %></td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="6">등록된 예약이 없습니다.</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</body>
 </html>

@@ -1,22 +1,35 @@
 <!DOCTYPE html>
 <html lang="ko">
-	<head>
-		<meta charset="UTF-8" />
-		<title>노트북 대여 신청</title>
-		<link rel="stylesheet" href="/public/borrow_styles.css" />
-	</head>
-	<body>
-		<%- include("header.ejs") %>
-		<div class="form-box">
-			<div class="icon">💻</div>
-			<h2>대여 신청</h2>
-			<input type="text" placeholder="이름" />
-			<input type="text" placeholder="학번" />
-			<input type="email" placeholder="이메일" />
+<head>
+  <meta charset="UTF-8" />
+  <title>노트북 대여 신청</title>
+  <link rel="stylesheet" href="/public/borrow_styles.css" />
+</head>
+<body>
+  <%- include("header.ejs") %>
 
-			<input type="date" placeholder="대여 시작일" />
-			<button>신청하기</button>
-		</div>
-		<%-include("footer.ejs") %>
-	</body>
+  <div class="form-wrapper">
+    <div class="form-box">
+      <div class="icon">💻</div>
+      <h2>대여 신청</h2>
+
+    <form action="/borrow" method="POST">
+		<input type="text" name="name" placeholder="이름" required />
+		<input type="text" name="studentId" placeholder="학번" required />
+		<input type="email" name="email" placeholder="이메일" required />
+		<input type="date" name="date" required />
+  	<label>
+    	<input type="radio" name="timeSlot" value="오전" required /> 오전
+  	</label>
+  	<label>
+    	<input type="radio" name="timeSlot" value="오후" required /> 오후
+  	</label>
+
+  	<button type="submit">신청하기</button>
+	</form>
+    </div>
+  </div>
+
+  <%- include("footer.ejs") %>
+</body>
 </html>
