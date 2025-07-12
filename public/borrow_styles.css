@@ -9,6 +9,7 @@ html {
 	justify-content: center; /* 가로 중앙 */
 	align-items: center; /* 세로 중앙 */
 	height: 100vh; /* 뷰포트 높이 전체 */
+
 }
 
 .form-box {
