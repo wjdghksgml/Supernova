@@ -1,15 +1,28 @@
+body,
+html {
+	height: 100%;
+	margin: 0;
+}
+
+.form-wrapper {
+	display: flex;
+	justify-content: center; /* 가로 중앙 */
+	align-items: center; /* 세로 중앙 */
+	height: 100vh; /* 뷰포트 높이 전체 */
+}
+
 .form-box {
-	/* login-box 스타일 그대로 복사 */
-	background: linear-gradient(to bottom right, rgba(212, 185, 233, 0.6), rgba(217, 164, 255, 0.6), rgba(205, 134, 255, 0.6));
+	background: linear-gradient(to bottom right, rgba(212, 185, 233, 0.425), rgba(217, 164, 255, 0.623));
 	border: 2px solid rgba(255, 255, 255, 0.3);
 	padding: 40px;
 	border-radius: 20px;
-	box-shadow: 0 8px 20px rgba(100, 0, 200, 0.2);
+	box-shadow: 0 50px 500px #ae2ee965;
 	text-align: center;
 	width: 280px;
 	height: auto; /* 높이는 유동적으로 */
 	position: relative;
 	backdrop-filter: blur(2px);
+	bottom: 10%;
 }
 
 .form-box .icon {
@@ -37,7 +50,9 @@
 	text-shadow: 1.5px 1.5px 3px rgba(0, 0, 0, 0.2);
 }
 
-.form-box input {
+.form-box input,
+label,
+select {
 	height: 24px;
 	width: 240px;
 	padding: 12px 24px;

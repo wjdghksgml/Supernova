@@ -1,107 +1,112 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8" />
-  <title>노트북 대여 시스템</title>
-  <link rel="stylesheet" href="/public/status_styles.css" />
-</head>
-<body>
-  <%- include("header.ejs") %>
+	<head>
+		<meta charset="utf-8" />
+		<title>노트북 대여 시스템</title>
+		<link rel="stylesheet" href="/public/status_styles.css" />
+	</head>
+	<body>
+		<%- include("header.ejs") %>
 
-  <div class="calendar">
-    <div class="calendar-header">
-      <button id="prev-week">〈</button>
-      <span id="week-range">7월 1일 ~ 7월 7일</span>
-      <button id="next-week">〉</button>
-    </div>
-    <table class="calendar-table">
-      <thead>
-        <tr>
-          <th>월</th><th>화</th><th>수</th><th>목</th><th>금</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr id="calendar-row">
-          <!-- JS에서 채워짐 -->
-        </tr>
-      </tbody>
-    </table>
-  </div>
+		<div class="calendar">
+			<div class="calendar-header">
+				<button id="prev-week">〈</button>
+				<span id="week-range">7월 1일 ~ 7월 7일</span>
+				<button id="next-week">〉</button>
+			</div>
+			<table class="calendar-table">
+				<thead>
+					<tr>
+						<th>월</th>
+						<th>화</th>
+						<th>수</th>
+						<th>목</th>
+						<th>금</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr id="calendar-row">
+						<!-- JS에서 채워짐 -->
+					</tr>
+				</tbody>
+			</table>
+		</div>
 
-  <%- include("footer.ejs") %>
+		<%- include("footer.ejs") %>
 
-  <script>
-    const borrowData = JSON.parse('<%- borrowData %>');
-    console.log("borrowData:", borrowData); // 데이터 확인용
+		<script>
+			const borrowData = JSON.parse("<%- JSON.stringify(borrowData) %>");
 
-    const calendarRow = document.getElementById("calendar-row");
-    const weekRange = document.getElementById("week-range");
-    const prevBtn = document.getElementById("prev-week");
-    const nextBtn = document.getElementById("next-week");
+			console.log("borrowData:", borrowData); // 데이터 확인용
 
-    let currentDate = new Date();
+			const calendarRow = document.getElementById("calendar-row");
+			const weekRange = document.getElementById("week-range");
+			const prevBtn = document.getElementById("prev-week");
+			const nextBtn = document.getElementById("next-week");
 
-    function formatDate(date) {
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, "0");
-      const d = String(date.getDate()).padStart(2, "0");
-      return `${y}-${m}-${d}`;
-    }
+			let currentDate = new Date();
 
-    function renderWeek(date) {
-      calendarRow.innerHTML = "";
+			function formatDate(date) {
+				const y = date.getFullYear();
+				const m = String(date.getMonth() + 1).padStart(2, "0");
+				const d = String(date.getDate()).padStart(2, "0");
+				return `${y}-${m}-${d}`;
+			}
 
-      const startOfWeek = new Date(date);
-      startOfWeek.setDate(startOfWeek.getDate() - ((startOfWeek.getDay() + 6) % 7));
+			function renderWeek(date) {
+				calendarRow.innerHTML = "";
 
-      const days = [];
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(startOfWeek);
-        d.setDate(startOfWeek.getDate() + i);
-        const dow = d.getDay();
-        if (dow >= 1 && dow <= 5) days.push(d);
-      }
+				const startOfWeek = new Date(date);
+				startOfWeek.setDate(startOfWeek.getDate() - ((startOfWeek.getDay() + 6) % 7));
 
-      const labelStart = `${days[0].getFullYear()}년 ${days[0].getMonth() + 1}월 ${days[0].getDate()}일`;
-      const labelEnd = `${days[days.length - 1].getFullYear()}년 ${days[days.length - 1].getMonth() + 1}월 ${days[days.length - 1].getDate()}일`;
-      weekRange.textContent = `${labelStart} ~ ${labelEnd}`;
+				const days = [];
+				for (let i = 0; i < 7; i++) {
+					const d = new Date(startOfWeek);
+					d.setDate(startOfWeek.getDate() + i);
+					const dow = d.getDay();
+					if (dow >= 1 && dow <= 5) days.push(d);
+				}
 
-      for (const d of days) {
-        const key = formatDate(d);
-        const dayData = borrowData[key] || {};
+				const labelStart = `${days[0].getFullYear()}년 ${days[0].getMonth() + 1}월 ${days[0].getDate()}일`;
+				const labelEnd = `${days[days.length - 1].getFullYear()}년 ${days[days.length - 1].getMonth() + 1}월 ${days[days.length - 1].getDate()}일`;
+				weekRange.textContent = `${labelStart} ~ ${labelEnd}`;
 
-        const td = document.createElement("td");
-        td.classList.add("calendar-cell");
+				for (const d of days) {
+					const key = formatDate(d);
+					const dayData = borrowData[key] || {};
 
-        td.innerHTML = `
+					const td = document.createElement("td");
+					td.classList.add("calendar-cell");
+
+					td.innerHTML = `
           <div class="cell-header">${d.getMonth() + 1}월 ${d.getDate()}일</div>
           <div class="session">
             <strong>오전</strong>
-            <ul>${(dayData.오전 || []).map(n => `<li>${n}</li>`).join("") || "<li>-</li>"}</ul>
+            <ul>${(dayData.오전 || []).map((n) => `<li>${n}</li>`).join("") || "<li>-</li>"}</ul>
           </div>
           <div class="session">
             <strong>오후</strong>
-            <ul>${(dayData.오후 || []).map(n => `<li>${n}</li>`).join("") || "<li>-</li>"}</ul>
+            <ul>${(dayData.오후 || []).map((n) => `<li>${n}</li>`).join("") || "<li>-</li>"}</ul>
           </div>
         `;
 
-        calendarRow.appendChild(td);
-      }
+					calendarRow.appendChild(td);
+				}
 
-      currentDate = new Date(days[0]);
-    }
+				currentDate = new Date(days[0]);
+			}
 
-    renderWeek(currentDate);
+			renderWeek(currentDate);
 
-    prevBtn.addEventListener("click", () => {
-      currentDate.setDate(currentDate.getDate() - 7);
-      renderWeek(currentDate);
-    });
+			prevBtn.addEventListener("click", () => {
+				currentDate.setDate(currentDate.getDate() - 7);
+				renderWeek(currentDate);
+			});
 
-    nextBtn.addEventListener("click", () => {
-      currentDate.setDate(currentDate.getDate() + 7);
-      renderWeek(currentDate);
-    });
-  </script>
-</body>
+			nextBtn.addEventListener("click", () => {
+				currentDate.setDate(currentDate.getDate() + 7);
+				renderWeek(currentDate);
+			});
+		</script>
+	</body>
 </html>
