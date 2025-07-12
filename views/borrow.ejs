@@ -4,6 +4,7 @@
 		<meta charset="UTF-8" />
 		<title>노트북 대여 신청</title>
 		<link rel="stylesheet" href="/public/borrow_styles.css" />
+		<link rel="icon" type="image/x-icon" href="/public/favicon.png" />
 	</head>
 	<body>
 		<%- include("header.ejs") %>
@@ -12,12 +13,21 @@
 			<div class="form-box">
 				<div class="icon">💻</div>
 				<h2>대여 신청</h2>
-				<input type="text" placeholder="이름" />
-				<input type="text" placeholder="학번" />
-				<input type="email" placeholder="이메일" />
-				<input type="date" id="borrowDate" />
-				오전 <input type="checkbox" placeholder="오전" id="useAM" /> 오후 <input type="checkbox" placeholder="오후" id="usePM" />
-				<button>신청하기</button>
+				<form action="/borrow" method="POST">
+					<input type="text" name="name" placeholder="이름" required />
+					<input type="text" name="studentId" placeholder="학번" required />
+					<input type="email" name="email" placeholder="이메일" required />
+					<input type="date" name="date" required />
+					<label for="time" hidden></label>
+					<span>수령 시간</span>
+					<select id="time" name="timeSlot" title="수령 시간" required>
+						<option value="오전">오프닝 전 (8:25-35)</option>
+						<option value="오후">점심시간 (12:50-1:00)</option>
+					</select>
+
+					<button type="submit">신청하기</button>
+				</form>
+
 			</div>
 		</div>
 

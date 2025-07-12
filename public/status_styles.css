@@ -1,10 +1,12 @@
+@import url("base.css");
+
 .calendar {
 	width: 100%;
 	max-width: 1000px;
 	margin: 40px auto;
 	background: white;
 	border-radius: 10px;
-	box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 50px 500px #ae2ee965;
 	overflow-x: auto;
 }
 

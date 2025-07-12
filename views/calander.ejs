@@ -7,7 +7,7 @@
 		<link rel="stylesheet" href="/public/calander_styles.css" />
 	</head>
 	<body>
-		<%-include("header.ejs") %>
+		<%- include("header.ejs") %>
 
 		<div class="calendar">
 			<div class="calendar-header">
@@ -25,7 +25,6 @@
 						<th>금</th>
 					</tr>
 				</thead>
-
 				<tbody>
 					<tr id="calendar-row">
 						<!-- JS에서 채움 -->
@@ -34,24 +33,22 @@
 			</table>
 		</div>
 	</body>
+
 	<script>
+		// ✅ 서버에서 전달된 데이터 safely 삽입
+		let borrowData = {};
+		try {
+		borrowData = JSON.parse('<%- JSON.stringify(borrowData) %>');
+		} catch (e) {
+			console.error("대여 데이터 파싱 오류:", e);
+		}
+
 		const calendarRow = document.getElementById("calendar-row");
 		const weekRange = document.getElementById("week-range");
 		const prevBtn = document.getElementById("prev-week");
 		const nextBtn = document.getElementById("next-week");
 
 		let currentDate = new Date(); // 오늘 기준
-
-		// 대여 데이터 (날짜 문자열: YYYY-MM-DD → 오전/오후)
-		const borrowData = {
-			"2025-07-03": { 오전: ["홍길동"], 오후: ["이순신"] },
-			"2025-07-07": { 오후: ["김철수"] },
-			"2025-07-15": { 오전: ["박영희"], 오후: ["최민수", "정다은"] },
-			"2025-07-28": { 오전: ["강유진"] },
-			"2025-08-02": { 오후: ["임꺽정"] },
-			"2025-08-05": { 오전: ["강감찬"] },
-			"2025-06-25": { 오전: ["선교팀"] },
-		};
 
 		function formatDate(date) {
 			const y = date.getFullYear();
@@ -64,21 +61,16 @@
 			calendarRow.innerHTML = "";
 
 			const startOfWeek = new Date(date);
-			startOfWeek.setDate(startOfWeek.getDate() - ((startOfWeek.getDay() + 6) % 7));
-			// 월요일 기준으로 정렬 (getDay() === 1)
+			startOfWeek.setDate(startOfWeek.getDate() - ((startOfWeek.getDay() + 6) % 7)); // 월요일 기준
 
 			const days = [];
 			for (let i = 0; i < 7; i++) {
 				const d = new Date(startOfWeek);
 				d.setDate(startOfWeek.getDate() + i);
-				const dow = d.getDay(); // 요일 (0~6)
-				if (dow >= 1 && dow <= 5) {
-					// 월~금만 포함
-					days.push(d);
-				}
+				const dow = d.getDay();
+				if (dow >= 1 && dow <= 5) days.push(d); // 평일만
 			}
 
-			// 상단 날짜 범위 표시 (예: 2025년 7월 1일 ~ 7월 5일)
 			const labelStart = `${days[0].getFullYear()}년 ${days[0].getMonth() + 1}월 ${days[0].getDate()}일`;
 			const labelEnd = `${days[days.length - 1].getFullYear()}년 ${days[days.length - 1].getMonth() + 1}월 ${days[days.length - 1].getDate()}일`;
 			weekRange.textContent = `${labelStart} ~ ${labelEnd}`;
@@ -91,38 +83,34 @@
 				td.classList.add("calendar-cell");
 
 				td.innerHTML = `
-			<div class="cell-header">${d.getMonth() + 1}월 ${d.getDate()}일</div>
-			<div class="session">
-				<strong>오전</strong>
-				<ul>
-					${(dayData.오전 || []).map((n) => `<li>${n}</li>`).join("") || "<li>-</li>"}
-				</ul>
-			</div>
-			<div class="session">
-				<strong>오후</strong>
-				<ul>
-					${(dayData.오후 || []).map((n) => `<li>${n}</li>`).join("") || "<li>-</li>"}
-				</ul>
-			</div>
-		`;
+					<div class="cell-header">${d.getMonth() + 1}월 ${d.getDate()}일</div>
+					<div class="session">
+						<strong>오전</strong>
+						<ul>
+							${(dayData.오전 || []).map((n) => `<li>${n}</li>`).join("") || "<li>-</li>"}
+						</ul>
+					</div>
+					<div class="session">
+						<strong>오후</strong>
+						<ul>
+							${(dayData.오후 || []).map((n) => `<li>${n}</li>`).join("") || "<li>-</li>"}
+						</ul>
+					</div>
+				`;
 
 				calendarRow.appendChild(td);
 			}
 
-			// 주 상태 업데이트
 			currentDate = new Date(days[0]);
 		}
 
-		// 초기 렌더
 		renderWeek(currentDate);
 
-		// 이전 주
 		prevBtn.addEventListener("click", () => {
 			currentDate.setDate(currentDate.getDate() - 7);
 			renderWeek(currentDate);
 		});
 
-		// 다음 주
 		nextBtn.addEventListener("click", () => {
 			currentDate.setDate(currentDate.getDate() + 7);
 			renderWeek(currentDate);
