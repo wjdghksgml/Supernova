@@ -15,6 +15,10 @@ body {
 	overflow-x: hidden;
 }
 
+p {
+	margin-top: 0;
+}
+
 .wave-container {
 	position: absolute;
 	bottom: 0;

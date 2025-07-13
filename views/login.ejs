@@ -6,6 +6,7 @@
 		<link rel="stylesheet" href="/public/login_styles.css" />
 		<link rel="icon" type="image/x-icon" href="/public/favicon.png" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	</head>
 	<body>
 		<div class="title">
@@ -21,9 +22,9 @@
 			<p style="color: red; text-align: center"><%= error %></p>
 			<% } %>
 
-			<form method="POST" action="/login">
-				<input type="text" name="name" placeholder="이름" value="<%= name %>" required />
-				<input type="text" name="studentId" placeholder="학번" value="<%= studentId %>" required />
+			<form method="POST" action="/login" id="loginForm">
+				<input type="text" name="name" placeholder="이름" value="<%= name %>" />
+				<input type="text" name="studentId" placeholder="학번" value="<%= studentId %>" />
 				<button type="submit">로그인</button>
 			</form>
 
