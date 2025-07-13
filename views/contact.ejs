@@ -1,13 +1,43 @@
 <!DOCTYPE html>
 <html lang="ko">
-	<head>
-		<meta charset="UTF-8" />
-		<link rel="stylesheet" href="/public/contact_styles.css" />
-		<link rel="icon" type="image/x-icon" href="/public/favicon.png" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>노트북 대여하기</title>
-	</head>
-	<body>
-		<%-include("header.ejs") %>
-	</body>
+<head>
+  <meta charset="UTF-8">
+  <title>문의하기</title>
+  <link rel="stylesheet" href="/public/contact_styles.css">
+</head>
+<body>
+  <%- include("header.ejs") %>
+
+  <div class="contact-container">
+    <h1>문의하기</h1>
+    <form action="/contact" method="POST">
+      <div class="form-group">
+        <label for="name">이름</label>
+        <input type="text" id="name" name="name" required />
+      </div>
+
+      <div class="form-group">
+        <label for="studentId">학번</label>
+        <input type="text" id="studentId" name="studentId" required />
+      </div>
+
+      <div class="form-group">
+        <label for="type">문의 유형</label>
+        <select id="type" name="type" required>
+          <option value="program">프로그램 오류</option>
+          <option value="apply">신청 문의</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="message">문의 내용</label>
+        <textarea id="message" name="message" rows="6" required></textarea>
+      </div>
+
+      <button type="submit">문의 제출</button>
+    </form>
+  </div>
+
+  <%- include("footer.ejs") %>
+</body>
 </html>

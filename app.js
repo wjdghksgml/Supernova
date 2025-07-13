@@ -99,24 +99,20 @@ app.post("/login", async (req, res) => {
 });
 
 
+
 app.post("/borrow", async (req, res) => {
   if (!req.session.userId) return res.redirect("/login");
 
   const { date, timeSlot, email } = req.body;
-
   if (!date || !timeSlot || !email) {
     return res.status(400).send("모든 필드를 입력해주세요.");
   }
 
   try {
     const db = await connectDB();
-
-    // 사용자 정보 확인
     const user = await db.collection("users").findOne({ _id: new ObjectId(req.session.userId) });
-
     if (!user) return res.status(403).send("사용자 인증 오류");
 
-    // 예약 저장
     await db.collection("reservations").insertOne({
       studentId: user.studentId,
       name: user.name,
@@ -124,10 +120,40 @@ app.post("/borrow", async (req, res) => {
       date,
       timeSlot,
       status: "대기중",
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
-    res.redirect("/status"); // 또는 /index 등
+    // 이메일 전송
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      from: `헤이븐 아카데믹팀 <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: `[신청 완료] ${date} 노트북 대여 신청이 접수되었습니다`,
+      text: `안녕하세요, ${user.name}님!
+
+${date}(${timeSlot}) 노트북 대여 신청이 접수되었습니다.
+대여는 당일 오피스에서 진행되며, 수령/반납 시간은 운영시간에 따라 달라질 수 있습니다.
+
+감사합니다.
+헤이븐 아카데믹팀`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("이메일 전송 실패:", error);
+      } else {
+        console.log("이메일 전송 성공:", info.response);
+      }
+    });
+
+    res.redirect("/status");
   } catch (err) {
     console.error("예약 등록 오류:", err);
     res.status(500).send("서버 오류");
@@ -234,92 +260,6 @@ app.get("/admin", requireAdmin, async (req, res) => {
   }
 });
 
-
-// 🔐 관리자 승인/거절 처리
-app.post("/admin/approve", requireAdmin, async (req, res) => {
-  const { id, action, reason } = req.body;
-  try {
-    const db = await connectDB();
-    const reservation = await db.collection("reservations").findOne({ _id: new ObjectId(id) });
-
-    if (!reservation) return res.status(404).send("예약을 찾을 수 없습니다.");
-
-    let statusText = "";
-    let emailSubject = "";
-    let emailText = "";
-
-    if (action === "approve") {
-      statusText = "승인";
-      emailSubject = `[승인] ${reservation.date} 노트북 대여 신청이 승인되었습니다`;
-      const receiveTime = reservation.timeSlot === "오전" ? "오프닝 전" : "점심시간";
-      const returnTime = reservation.timeSlot === "오전" ? "점심시간" : "클로징 후";
-
-      emailText = `안녕하세요, ${reservation.name}님!
-
-${reservation.date}에 신청하신 노트북 대여가 승인되었습니다.
-오전/오후: ${reservation.timeSlot}
-
-${receiveTime}에 오피스 옆 로비에서 노트북을 수령해주시고, ${returnTime}까지 반납해주세요.
-감사합니다.
-
-헤이븐 아카데믹팀`;
-    } else if (action === "reject") {
-      statusText = "거절";
-      emailSubject = `[거절] ${reservation.date} 노트북 대여 신청이 거절되었습니다`;
-      emailText = `안녕하세요, ${reservation.name}님.
-
-${reservation.date}에 신청하신 노트북 대여가 거절되었습니다.
-사유: ${reason || "사유 미제공"}
-
-문의가 있으시면 운영팀에 연락주시기 바랍니다.
-감사합니다.
-
-헤이븐 아카데믹팀`;
-    }
-
-    const updateFields = {
-      status: statusText
-    };
-
-    if (action === "reject") {
-      updateFields.rejectedAt = new Date();
-      updateFields.rejectReason = reason || "";
-    }
-
-    await db.collection("reservations").updateOne(
-      { _id: new ObjectId(id) },
-      { $set: updateFields }
-    );
-
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
-    const mailOptions = {
-      from: `"헤이븐 아카데믹팀" <${process.env.EMAIL_USER}>`,
-      to: reservation.email,
-      subject: emailSubject,
-      text: emailText,
-    };
-
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error("❌ 이메일 전송 실패:", error);
-      } else {
-        console.log("✅ 이메일 전송 성공:", info.response);
-      }
-    });
-
-    res.redirect("/admin");
-  } catch (err) {
-    console.error("신청 상태 업데이트 실패:", err);
-    res.status(500).send("서버 오류");
-  }
-});
 
 app.post("/admin/overdue", requireAdmin, async (req, res) => {
   const reservationId = req.body.id;
@@ -457,6 +397,41 @@ app.get("/:page", (req, res) => {
     res.status(404).render("404");
   }
 });
+
+
+app.post("/contact", async (req, res) => {
+  const { name, studentId, type, message } = req.body;
+
+  const recipients =
+    type === "program"
+      ? ["2027.hwanhee.joung@haven.or.kr", "2027.sangyul.lee@haven.or.kr"]
+      : ["2027.bokyung.kang@haven.or.kr", "2027.yusul.shin@haven.or.kr"];
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: `"노트북 시스템 문의" <${process.env.EMAIL_USER}>`,
+    to: recipients.join(","),
+    subject: `[문의] ${type === "program" ? "프로그램 오류" : "신청 문의"} - ${name}`,
+    text: `이름: ${name}\n학번: ${studentId}\n\n문의 내용:\n${message}`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`문의 이메일 제출이 완료되었습니다!`);
+    res.send("<script>alert('문의 제출이 완료되었습니다!'); window.location.href = '/';</script>");
+  } catch (err) {
+    console.error("문의 전송 실패:", err);
+    res.status(500).send("메일 전송 실패");
+  }
+});
+
 
 // 서버 시작
 app.listen(PORT, () => {
