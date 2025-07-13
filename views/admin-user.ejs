@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title><%= user.name %> 님의 상세 정보</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #eee;
+    }
+    .reject-reason {
+      margin-top: 5px;
+      font-size: 0.9em;
+      color: #c00;
+    }
+  </style>
+</head>
+<body>
+
+<a href="/admin" style="display: inline-block; margin-bottom: 20px;">← 관리자 페이지로</a>
+
+<h1><%= user.name %> 님 상세 정보</h1>
+<p><strong>이름:</strong> <%= user.name %></p>
+<p><strong>학번:</strong> <%= user.studentId %></p>
+<p><strong>등록일:</strong> <%= new Date(user.createdAt).toLocaleString() %></p>
+
+<h2>대여 신청 기록</h2>
+<% if (reservations.length === 0) { %>
+  <p>대여 기록이 없습니다.</p>
+<% } else { %>
+  <table>
+    <thead>
+      <tr>
+        <th>날짜</th>
+        <th>시간대</th>
+        <th>상태</th>
+        <th>신청 시각</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% for (let i = 0; i < reservations.length; i++) { %>
+        <tr>
+          <td><%= reservations[i].date %></td>
+          <td><%= reservations[i].timeSlot %></td>
+          <td>
+            <% if (reservations[i].status === "거절") { %>
+              <span onclick="toggleRejectReason('<%= reservations[i]._id %>')" style="cursor:pointer; color:red;">거절</span>
+              <div id="reason-<%= reservations[i]._id %>" class="reject-reason" style="display: none;">
+                📅 <%= reservations[i].rejectedAt ? new Date(reservations[i].rejectedAt).toLocaleString() : "-" %><br>
+                📝 <%= reservations[i].rejectReason || "사유 없음" %>
+              </div>
+            <% } else { %>
+              <%= reservations[i].status %>
+            <% } %>
+          </td>
+          <td><%= new Date(reservations[i].createdAt).toLocaleString() %></td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+<% } %>
+
+<form id="paginationForm" method="get" action="/admin/user/<%= user.studentId %>" style="margin-top: 20px;">
+  <label for="limit">페이지당 항목 수:</label>
+  <select name="limit" id="limit" onchange="this.form.submit();">
+    <option value="10" <%= Number(limit) === 10 ? 'selected' : '' %>>10개</option>
+    <option value="15" <%= Number(limit) === 15 ? 'selected' : '' %>>15개</option>
+    <option value="20" <%= Number(limit) === 20 ? 'selected' : '' %>>20개</option>
+    <option value="30" <%= Number(limit) === 30 ? 'selected' : '' %>>30개</option>
+  </select>
+  <input type="hidden" name="page" value="<%= currentPage %>">
+</form>
+
+<div style="margin-top: 10px;">
+  <% if (currentPage > 1) { %>
+    <a href="/admin/user/<%= user.studentId %>?page=<%= currentPage - 1 %>&limit=<%= limit %>">◀ 이전</a>
+  <% } %>
+
+  <span style="margin: 0 10px;">페이지 <%= currentPage %> / <%= totalPages %></span>
+
+  <% if (currentPage < totalPages) { %>
+    <a href="/admin/user/<%= user.studentId %>?page=<%= currentPage + 1 %>&limit=<%= limit %>">다음 ▶</a>
+  <% } %>
+</div>
+
+
+<script>
+  function toggleRejectReason(id) {
+    const el = document.getElementById("reason-" + id);
+    if (el) {
+      el.style.display = (el.style.display === "none") ? "block" : "none";
+    }
+  }
+</script>
+
+</body>
+</html>
