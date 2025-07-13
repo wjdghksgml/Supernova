@@ -84,11 +84,13 @@ body {
 	color: #ae2ee9;
 	font-family: Pretendard, sans-serif;
 	font-weight: 600;
+	margin-bottom: 10%;
 }
 .center-404 p {
 	font-size: 16px;
 	color: white;
-	margin-top: 12px;
+	line-height: 1.7;
+	margin: 0;
 	font-family: Pretendard, sans-serif;
 	font-weight: 500;
 	text-shadow: 1.5px 1.5px 3px rgba(0, 0, 0, 0.2);

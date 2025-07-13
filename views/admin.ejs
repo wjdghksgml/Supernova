@@ -3,95 +3,87 @@
 <head>
   <meta charset="UTF-8" />
   <title>관리자 페이지 - 예약 목록</title>
-  <style>
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    th, td {
-      border: 1px solid #aaa;
-      padding: 8px;
-      text-align: center;
-    }
-    th {
-      background-color: #ddd;
-    }
-  </style>
+	<link rel="stylesheet" href="/public/admin_styles.css" />
+
 </head>
 <body>
-  <h1>예약 목록 (Admin)</h1>
-  <table>
-    <thead>
-      <tr>
-        <th>이름</th>
-        <th>학번</th>
-        <th>이메일</th>
-        <th>예약 날짜</th>
-        <th>시간대</th>
-        <th>상태</th> <!-- ✅ 이 부분 수정 -->
-        <th>승인/거절</th> <!-- ✅ 헤더 추가 -->
-      </tr>
-    </thead>
-	<tbody>
-	<% reservations.forEach(r => { %>
-		<tr>
-		<!-- admin.ejs -->
-		<td>
-		<a href="/admin/user/<%= r.studentId %>"><%= r.name %></a>
-		</td>
-		<td><%= r.studentId || "-" %></td>
-		<td><%= r.email || "-" %></td>
-		<td><%= r.date %></td>
-		<td><%= r.timeSlot %></td>
-		<td><%= r.status || "대기중" %></td>
-		<td>
-			<% if (r.status === "대기중") { %>
-			<form method="POST" action="/admin/approve" style="display:inline;">
-				<input type="hidden" name="id" value="<%= r._id.toString() %>">
-				<input type="hidden" name="action" value="approve">
-				<button type="submit">허락</button>
-			</form>
-			<button type="button" onclick="showRejectReason('<%= r._id.toString() %>')">거절</button>
-			<form method="POST" action="/admin/approve" id="reject-form-<%= r._id.toString() %>" style="display:none; margin-top:5px;">
-				<input type="hidden" name="id" value="<%= r._id.toString() %>">
-				<input type="hidden" name="action" value="reject">
-				<input type="text" name="reason" placeholder="거절 사유 입력" required>
-				<button type="submit">거절 확정</button>
-			</form>
-			<% } else { %>
-			<%= r.status %>
-			<% } %>
-		</td>
-		</tr>
-	<% }) %>
-	</tbody>
-	</table>
+	<%- include('header.ejs') %>
+	<main>
+		<h1 id="reservation-list">예약 목록 (Admin)</h1>
+		<table>
+			<thead>
+				<tr>
+					<th>이름</th>
+					<th>학번</th>
+					<th>이메일</th>
+					<th>예약 날짜</th>
+					<th>시간대</th>
+					<th>상태</th> <!-- ✅ 이 부분 수정 -->
+					<th>승인/거절</th> <!-- ✅ 헤더 추가 -->
+				</tr>
+			</thead>
+		<tbody>
+		<% reservations.forEach(r => { %>
+			<tr>
+			<!-- admin.ejs -->
+			<td>
+			<a href="/admin/user/<%= r.studentId %>"><%= r.name %></a>
+			</td>
+			<td><%= r.studentId || "-" %></td>
+			<td><%= r.email || "-" %></td>
+			<td><%= r.date %></td>
+			<td><%= r.timeSlot %></td>
+			<td><%= r.status || "대기중" %></td>
+			<td>
+				<% if (r.status === "대기중") { %>
+				<form method="POST" action="/admin/approve" style="display:inline;">
+					<input type="hidden" name="id" value="<%= r._id.toString() %>">
+					<input type="hidden" name="action" value="approve">
+					<button type="submit">허락</button>
+				</form>
+				<button type="button" onclick="showRejectReason('<%= r._id.toString() %>')">거절</button>
+				<form method="POST" action="/admin/approve" id="reject-form-<%= r._id.toString() %>" style="display:none; margin-top:5px;">
+					<input type="hidden" name="id" value="<%= r._id.toString() %>">
+					<input type="hidden" name="action" value="reject">
+					<input type="text" name="reason" placeholder="거절 사유 입력" required>
+					<button type="submit">거절 확정</button>
+				</form>
+				<% } else { %>
+				<%= r.status %>
+				<% } %>
+			</td>
+			</tr>
+		<% }) %>
+		</tbody>
+		</table>
 
-	<!-- 테이블 렌더링 후, pagination UI 추가 -->
+		<!-- 테이블 렌더링 후, pagination UI 추가 -->
 
-	<!-- 테이블 아래에 위치 -->
-	<form id="paginationForm" method="get" action="/admin" style="margin-top: 20px;">
-	<label for="limit">페이지당 항목 수:</label>
-	<select name="limit" id="limit" onchange="this.form.submit();">
-		<option value="10" <%= Number(limit) === 10 ? 'selected' : '' %>>10개</option>
-		<option value="15" <%= Number(limit) === 15 ? 'selected' : '' %>>15개</option>
-		<option value="20" <%= Number(limit) === 20 ? 'selected' : '' %>>20개</option>
-		<option value="30" <%= Number(limit) === 30 ? 'selected' : '' %>>30개</option>
-	</select>
-	<input type="hidden" name="page" value="<%= currentPage %>">
-	</form>
+		<!-- 테이블 아래에 위치 -->
+		<form id="paginationForm" method="get" action="/admin" style="margin-top: 20px;">
+		<label for="limit">페이지당 항목 수:</label>
+		<select name="limit" id="limit" onchange="this.form.submit();">
+			<option value="10" <%= Number(limit) === 10 ? 'selected' : '' %>>10개</option>
+			<option value="15" <%= Number(limit) === 15 ? 'selected' : '' %>>15개</option>
+			<option value="20" <%= Number(limit) === 20 ? 'selected' : '' %>>20개</option>
+			<option value="30" <%= Number(limit) === 30 ? 'selected' : '' %>>30개</option>
+		</select>
+		<input type="hidden" name="page" value="<%= currentPage %>">
+		</form>
 
-	<div style="margin-top: 10px;">
-	<% if (currentPage > 1) { %>
-		<a href="/admin?page=<%= currentPage - 1 %>&limit=<%= limit %>">◀ 이전</a>
-	<% } %>
+		<div style="margin-top: 10px;">
+		<% if (currentPage > 1) { %>
+			<a href="/admin?page=<%= currentPage - 1 %>&limit=<%= limit %>">◀ 이전</a>
+		<% } %>
 
-	<span style="margin: 0 10px;">페이지 <%= currentPage %> / <%= totalPages %></span>
+		<span style="margin: 0 10px;">페이지 <%= currentPage %> / <%= totalPages %></span>
 
-	<% if (currentPage < totalPages) { %>
-		<a href="/admin?page=<%= currentPage + 1 %>&limit=<%= limit %>">다음 ▶</a>
-	<% } %>
-	</div>
+		<% if (currentPage < totalPages) { %>
+			<a href="/admin?page=<%= currentPage + 1 %>&limit=<%= limit %>">다음 ▶</a>
+		<% } %>
+		</div>
+	</main>
+	<%- include('footer.ejs') %>
 
 	<script>
 	function showRejectReason(id) {

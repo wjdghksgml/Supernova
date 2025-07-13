@@ -305,14 +305,6 @@ ${reservation.date}에 신청하신 노트북 대여가 거절되었습니다.
 			createdAt: new Date(),
 		});
 
-		const transporter = nodemailer.createTransport({
-			service: "gmail",
-			auth: {
-				user: process.env.EMAIL_USER,
-				pass: process.env.EMAIL_PASS,
-			},
-		});
-
 		const mailOptions = {
 			from: `"헤이븐 아카데믹팀" <${process.env.EMAIL_USER}>`,
 			to: reservation.email,
@@ -364,15 +356,34 @@ app.get("/admin", async (req, res) => {
 	if (req.session.userName !== "admin") {
 		return res.status(403).redirect("/404");
 	}
+
 	try {
 		const db = await connectDB();
-		const reservations = await db.collection("reservations").find({}).sort({ createdAt: -1 }).toArray();
 
-		// 이 부분 중요! reservations를 넘겨줘야 에러 안남
-		res.render("admin", { reservations });
+		// 쿼리에서 페이지와 limit 파라미터 가져오기 (기본값 설정)
+		const limit = parseInt(req.query.limit) || 10;
+		const currentPage = parseInt(req.query.page) || 1;
+		const skip = (currentPage - 1) * limit;
+
+		// 전체 문서 수
+		const totalCount = await db.collection("reservations").countDocuments();
+
+		// 전체 페이지 수 계산
+		const totalPages = Math.ceil(totalCount / limit);
+
+		// 현재 페이지에 해당하는 데이터만 가져오기
+		const reservations = await db.collection("reservations").find({}).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray();
+
+		// EJS로 전달
+		res.render("admin", {
+			reservations,
+			limit,
+			currentPage,
+			totalPages,
+			totalCount,
+		});
 	} catch (err) {
 		console.error("관리자 페이지 오류:", err);
-		console.log("어드민 페이지 예약 목록:", reservations);
 		res.status(500).send("서버 오류");
 	}
 });
