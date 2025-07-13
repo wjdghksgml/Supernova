@@ -38,7 +38,7 @@
 		// ✅ 서버에서 전달된 데이터 safely 삽입
 		let borrowData = {};
 		try {
-		borrowData = JSON.parse('<%- JSON.stringify(borrowData) %>');
+			borrowData = JSON.parse("<%- JSON.stringify(borrowData) %>");
 		} catch (e) {
 			console.error("대여 데이터 파싱 오류:", e);
 		}
