@@ -4,6 +4,25 @@
   <meta charset="utf-8" />
   <title>노트북 대여 시스템</title>
   <link rel="stylesheet" href="/public/status_styles.css" />
+  <style>
+    .calendar-cell.past {
+      position: relative;
+      background-color: #f0f0f0;
+      opacity: 0.6;
+    }
+    .calendar-cell.past::after {
+      content: "지난 날짜";
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.5);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>
   <%- include("header.ejs") %>
@@ -47,14 +66,6 @@
       return `${y}-${m}-${d}`;
     }
 
-    function getStatusIcon(status) {
-      switch (status) {
-        case "승인": return "✔️";
-        case "거절": return "❌";
-        default: return "⏳";
-      }
-    }
-
     function renderWeek(date) {
       calendarRow.innerHTML = "";
 
@@ -73,6 +84,9 @@
       const labelEnd = `${days[days.length - 1].getFullYear()}년 ${days[days.length - 1].getMonth() + 1}월 ${days[days.length - 1].getDate()}일`;
       weekRange.textContent = `${labelStart} ~ ${labelEnd}`;
 
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
       for (const d of days) {
         const key = formatDate(d);
         const dayData = borrowData[key] || {};
@@ -80,8 +94,8 @@
         const td = document.createElement("td");
         td.classList.add("calendar-cell");
 
-        const 오전List = (dayData.오전 || []).map(n => `<li>${n.name} ${getStatusIcon(n.status)}</li>`).join("") || "<li>-</li>";
-        const 오후List = (dayData.오후 || []).map(n => `<li>${n.name} ${getStatusIcon(n.status)}</li>`).join("") || "<li>-</li>";
+        const 오전List = (dayData.오전 || []).map(n => `<li>${n.name}</li>`).join("") || "<li>-</li>";
+        const 오후List = (dayData.오후 || []).map(n => `<li>${n.name}</li>`).join("") || "<li>-</li>";
 
         td.innerHTML = `
           <div class="cell-header">${d.getMonth() + 1}월 ${d.getDate()}일</div>
@@ -94,6 +108,10 @@
             <ul>${오후List}</ul>
           </div>
         `;
+
+        if (d < today) {
+          td.classList.add("past");
+        }
 
         calendarRow.appendChild(td);
       }
