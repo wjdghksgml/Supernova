@@ -160,17 +160,16 @@ app.get("/admin/logout", (req, res) => {
   req.session.destroy(() => res.redirect("/admin/login"));
 });
 
+// app.js - 관리자 라우트 부분 수정 예시
 app.get("/admin", requireAdmin, async (req, res) => {
   try {
     const db = await connectDB();
-
-    const limit = parseInt(req.query.limit, 10) || 10; // 페이지당 개수
+    const limit = parseInt(req.query.limit, 10) || 10;
     const currentPage = parseInt(req.query.page, 10) || 1;
-
     const totalCount = await db.collection("reservations").countDocuments();
     const totalPages = Math.ceil(totalCount / limit);
 
-    const reservations = await db
+    const reservationsRaw = await db
       .collection("reservations")
       .find({})
       .sort({ createdAt: -1 })
@@ -178,11 +177,56 @@ app.get("/admin", requireAdmin, async (req, res) => {
       .limit(limit)
       .toArray();
 
+    // getStatusDisplay 함수 (서버쪽에 동일하게 복사)
+    function getStatusDisplay(r) {
+      const now = new Date();
+      const reservationDate = new Date(r.date + "T00:00:00");
+      const status = r.status;
+
+      if (status === "반납완료") return "반납완료";
+
+      const isToday = now.toDateString() === reservationDate.toDateString();
+      const isFuture = reservationDate > now;
+
+      const hour = now.getHours();
+
+      if (isFuture) {
+        return "대기중";
+      }
+
+      if (r.timeSlot === "오전") {
+        if (isToday) {
+          return hour < 9 ? "대기중" : "대출중";
+        } else if (now > reservationDate) {
+          return "반납요망";
+        }
+      }
+
+      if (r.timeSlot === "오후") {
+        const nextDay = new Date(reservationDate);
+        nextDay.setDate(nextDay.getDate() + 1);
+
+        if (isToday) {
+          return hour < 13 ? "대기중" : "대출중";
+        } else if (now > nextDay) {
+          return "반납요망";
+        }
+      }
+
+      return "대출중";
+    }
+
+    // 상태 필드를 추가해서 넘김
+    const reservations = reservationsRaw.map(r => ({
+      ...r,
+      statusDisplay: getStatusDisplay(r)
+    }));
+
     res.render("admin", {
       reservations,
       currentPage,
       totalPages,
-      limit
+      limit,
     });
   } catch (err) {
     console.error("관리자 페이지 오류:", err);
@@ -190,40 +234,6 @@ app.get("/admin", requireAdmin, async (req, res) => {
   }
 });
 
-
-app.get('/admin/user/:studentId', requireAdmin, async (req, res) => {
-  try {
-    const db = await connectDB();
-    const { studentId } = req.params;
-
-    const limit = parseInt(req.query.limit, 10) || 10;
-    const currentPage = parseInt(req.query.page, 10) || 1;
-
-    const totalCount = await db.collection('reservations').countDocuments({ studentId });
-    const totalPages = Math.ceil(totalCount / limit);
-
-    const reservations = await db.collection('reservations')
-      .find({ studentId })
-      .sort({ createdAt: -1 })
-      .skip((currentPage - 1) * limit)
-      .limit(limit)
-      .toArray();
-
-    const user = await db.collection('users').findOne({ studentId });
-    if (!user) return res.status(404).send('사용자를 찾을 수 없습니다.');
-
-    res.render('admin-user', {
-      user,
-      reservations,
-      limit,
-      currentPage,
-      totalPages
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('서버 오류');
-  }
-});
 
 // 🔐 관리자 승인/거절 처리
 app.post("/admin/approve", requireAdmin, async (req, res) => {
@@ -310,6 +320,102 @@ ${reservation.date}에 신청하신 노트북 대여가 거절되었습니다.
     res.status(500).send("서버 오류");
   }
 });
+
+app.post("/admin/overdue", requireAdmin, async (req, res) => {
+  const reservationId = req.body.id;
+
+  try {
+    const db = await connectDB();
+    const { ObjectId } = require("mongodb");
+
+    const reservation = await db.collection("reservations").findOne({ _id: new ObjectId(reservationId) });
+    if (!reservation) {
+      return res.status(404).send("예약 정보를 찾을 수 없습니다.");
+    }
+
+    await db.collection("reservations").updateOne(
+      { _id: new ObjectId(reservationId) },
+      {
+        $set: {
+          status: "반납완료",
+          returnedAt: new Date(),
+          overdue: true,
+          overdueCount: (reservation.overdueCount || 0) + 1,
+        },
+      }
+    );
+
+    res.redirect(req.get('referer') || "/admin");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("서버 오류");
+  }
+});
+
+// 반납 완료 처리
+app.post("/admin/return", requireAdmin, async (req, res) => {
+  const id = req.body.id;
+
+  try {
+    const db = await connectDB();
+
+    const result = await db.collection("reservations").updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          status: "반납완료",
+          returnedAt: new Date(),
+          overdue: false
+        }
+      }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).send("해당 예약이 존재하지 않거나 이미 반납 완료됨.");
+    }
+
+    res.redirect("/admin");
+  } catch (err) {
+    console.error("반납 확인 처리 오류:", err);
+    res.status(500).send("서버 오류");
+  }
+});
+
+
+app.get('/admin/user/:studentId', requireAdmin, async (req, res) => {
+  try {
+    const db = await connectDB();
+    const { studentId } = req.params;
+
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const currentPage = parseInt(req.query.page, 10) || 1;
+
+    const totalCount = await db.collection('reservations').countDocuments({ studentId });
+    const totalPages = Math.ceil(totalCount / limit);
+
+    const reservations = await db.collection('reservations')
+      .find({ studentId })
+      .sort({ createdAt: -1 })
+      .skip((currentPage - 1) * limit)
+      .limit(limit)
+      .toArray();
+
+    const user = await db.collection('users').findOne({ studentId });
+    if (!user) return res.status(404).send('사용자를 찾을 수 없습니다.');
+
+    res.render('admin-user', {
+      user,
+      reservations,
+      limit,
+      currentPage,
+      totalPages
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('서버 오류');
+  }
+});
+
 
 // 📅 대여 현황 페이지
 app.get("/status", async (req, res) => {

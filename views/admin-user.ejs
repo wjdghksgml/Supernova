@@ -21,11 +21,6 @@
     th {
       background-color: #eee;
     }
-    .reject-reason {
-      margin-top: 5px;
-      font-size: 0.9em;
-      color: #c00;
-    }
   </style>
 </head>
 <body>
@@ -48,27 +43,85 @@
         <th>시간대</th>
         <th>상태</th>
         <th>신청 시각</th>
+        <th>반납 시각</th>
+        <th>연체 여부</th>
+        <th>연체 누적</th>
+        <th>조치</th>
       </tr>
     </thead>
     <tbody>
-      <% for (let i = 0; i < reservations.length; i++) { %>
-        <tr>
-          <td><%= reservations[i].date %></td>
-          <td><%= reservations[i].timeSlot %></td>
-          <td>
-            <% if (reservations[i].status === "거절") { %>
-              <span onclick="toggleRejectReason('<%= reservations[i]._id %>')" style="cursor:pointer; color:red;">거절</span>
-              <div id="reason-<%= reservations[i]._id %>" class="reject-reason" style="display: none;">
-                📅 <%= reservations[i].rejectedAt ? new Date(reservations[i].rejectedAt).toLocaleString() : "-" %><br>
-                📝 <%= reservations[i].rejectReason || "사유 없음" %>
-              </div>
-            <% } else { %>
-              <%= reservations[i].status %>
-            <% } %>
-          </td>
-          <td><%= new Date(reservations[i].createdAt).toLocaleString() %></td>
-        </tr>
+
+<%
+
+  function getStatusDisplay(r) {
+    const now = new Date();
+    const reservationDate = new Date(r.date + "T00:00:00");
+    const status = r.status;
+
+    if (status === "반납완료") return "반납완료";
+
+    const isToday = now.toDateString() === reservationDate.toDateString();
+    const isFuture = reservationDate > now;
+
+    const hour = now.getHours();
+
+    if (isFuture) {
+      return "대기중";
+    }
+
+    if (r.timeSlot === "오전") {
+      if (isToday) {
+        return hour < 9 ? "대기중" : "대출중";
+      } else if (now > reservationDate) {
+        return "반납요망";
+      }
+    }
+
+    if (r.timeSlot === "오후") {
+      const nextDay = new Date(reservationDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+
+      if (isToday) {
+        return hour < 13 ? "대기중" : "대출중";
+      } else if (now > nextDay) {
+        return "반납요망";
+      }
+    }
+
+    return "대출중";
+  }
+%>
+
+<% for (let i = 0; i < reservations.length; i++) { 
+     const r = reservations[i];
+     const status = getStatusDisplay(r);
+%>
+  <tr>
+    <td><%= r.date %></td>
+    <td><%= r.timeSlot %></td>
+    <td><%= status %></td>
+    <td><%= new Date(r.createdAt).toLocaleString() %></td>
+    <td><%= r.returnedAt ? new Date(r.returnedAt).toLocaleString() : '-' %></td>
+    <td><%= r.overdue ? '연체' : '정상' %></td>
+    <td><%= r.overdueCount || 0 %></td>
+    <td>
+      <% if (status === '대출중') { %>
+        <form method="POST" action="/admin/return" style="display:inline;">
+          <input type="hidden" name="id" value="<%= r._id %>">
+          <button type="submit">반납완료</button>
+        </form>
+      <% } else if (status === '반납요망') { %>
+        <form method="POST" action="/admin/overdue" style="display:inline;">
+          <input type="hidden" name="id" value="<%= r._id %>">
+          <button type="submit">대출연체</button>
+        </form>
+      <% } else { %>
+        -
       <% } %>
+    </td>
+  </tr>
+<% } %>
+
     </tbody>
   </table>
 <% } %>
@@ -88,23 +141,11 @@
   <% if (currentPage > 1) { %>
     <a href="/admin/user/<%= user.studentId %>?page=<%= currentPage - 1 %>&limit=<%= limit %>">◀ 이전</a>
   <% } %>
-
   <span style="margin: 0 10px;">페이지 <%= currentPage %> / <%= totalPages %></span>
-
   <% if (currentPage < totalPages) { %>
     <a href="/admin/user/<%= user.studentId %>?page=<%= currentPage + 1 %>&limit=<%= limit %>">다음 ▶</a>
   <% } %>
 </div>
-
-
-<script>
-  function toggleRejectReason(id) {
-    const el = document.getElementById("reason-" + id);
-    if (el) {
-      el.style.display = (el.style.display === "none") ? "block" : "none";
-    }
-  }
-</script>
 
 </body>
 </html>

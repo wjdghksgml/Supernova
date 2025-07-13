@@ -20,6 +20,47 @@
 </head>
 <body>
   <h1>예약 목록 (Admin)</h1>
+
+  <% 
+  function getStatusDisplay(r) {
+    const now = new Date();
+    const reservationDate = new Date(r.date + "T00:00:00");
+    const status = r.status;
+
+    if (status === "반납완료") return "반납완료";
+
+    const isToday = now.toDateString() === reservationDate.toDateString();
+    const isFuture = reservationDate > now;
+
+    const hour = now.getHours();
+
+    if (isFuture) {
+      return "대기중";
+    }
+
+    if (r.timeSlot === "오전") {
+      if (isToday) {
+        return hour < 9 ? "대기중" : "대출중";
+      } else if (now > reservationDate) {
+        return "반납요망";
+      }
+    }
+
+    if (r.timeSlot === "오후") {
+      const nextDay = new Date(reservationDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+
+      if (isToday) {
+        return hour < 13 ? "대기중" : "대출중";
+      } else if (now > nextDay) {
+        return "반납요망";
+      }
+    }
+
+    return "대출중";
+  }
+  %>
+
   <table>
     <thead>
       <tr>
@@ -28,77 +69,65 @@
         <th>이메일</th>
         <th>예약 날짜</th>
         <th>시간대</th>
-        <th>상태</th> <!-- ✅ 이 부분 수정 -->
-        <th>승인/거절</th> <!-- ✅ 헤더 추가 -->
+        <th>상태</th>
+        <th>조치</th>
       </tr>
     </thead>
-	<tbody>
-	<% reservations.forEach(r => { %>
-		<tr>
-		<!-- admin.ejs -->
-		<td>
-		<a href="/admin/user/<%= r.studentId %>"><%= r.name %></a>
-		</td>
-		<td><%= r.studentId || "-" %></td>
-		<td><%= r.email || "-" %></td>
-		<td><%= r.date %></td>
-		<td><%= r.timeSlot %></td>
-		<td><%= r.status || "대기중" %></td>
-		<td>
-			<% if (r.status === "대기중") { %>
-			<form method="POST" action="/admin/approve" style="display:inline;">
-				<input type="hidden" name="id" value="<%= r._id.toString() %>">
-				<input type="hidden" name="action" value="approve">
-				<button type="submit">허락</button>
-			</form>
-			<button type="button" onclick="showRejectReason('<%= r._id.toString() %>')">거절</button>
-			<form method="POST" action="/admin/approve" id="reject-form-<%= r._id.toString() %>" style="display:none; margin-top:5px;">
-				<input type="hidden" name="id" value="<%= r._id.toString() %>">
-				<input type="hidden" name="action" value="reject">
-				<input type="text" name="reason" placeholder="거절 사유 입력" required>
-				<button type="submit">거절 확정</button>
-			</form>
-			<% } else { %>
-			<%= r.status %>
-			<% } %>
-		</td>
-		</tr>
-	<% }) %>
-	</tbody>
-	</table>
+    <tbody>
+      <% reservations.forEach(r => { 
+          const status = getStatusDisplay(r);
+      %>
+        <tr>
+          <td><a href="/admin/user/<%= r.studentId %>"><%= r.name %></a></td>
+          <td><%= r.studentId || "-" %></td>
+          <td><%= r.email || "-" %></td>
+          <td><%= r.date %></td>
+          <td><%= r.timeSlot %></td>
+          <td><%= status %></td>
+          <td>
+            <% if (status === "반납완료") { %>
+              완료
+            <% } else if (status === "반납요망") { %>
+              <form method="POST" action="/admin/overdue" style="margin: 0;">
+                <input type="hidden" name="id" value="<%= r._id %>">
+                <button type="submit" style="padding: 5px 10px; cursor: pointer;">연체 처리</button>
+              </form>
+            <% } else if (status === "대출중") { %>
+              <form method="POST" action="/admin/return" style="margin: 0;">
+                <input type="hidden" name="id" value="<%= r._id %>">
+                <button type="submit" style="padding: 5px 10px; cursor: pointer;">반납 확인</button>
+              </form>
+            <% } else { %>
+              -
+            <% } %>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
 
-	<!-- 테이블 렌더링 후, pagination UI 추가 -->
+  <form id="paginationForm" method="get" action="/admin" style="margin-top: 20px;">
+    <label for="limit">페이지당 항목 수:</label>
+    <select name="limit" id="limit" onchange="this.form.submit();">
+      <option value="10" <%= Number(limit) === 10 ? 'selected' : '' %>>10개</option>
+      <option value="15" <%= Number(limit) === 15 ? 'selected' : '' %>>15개</option>
+      <option value="20" <%= Number(limit) === 20 ? 'selected' : '' %>>20개</option>
+      <option value="30" <%= Number(limit) === 30 ? 'selected' : '' %>>30개</option>
+    </select>
+    <input type="hidden" name="page" value="<%= currentPage %>">
+  </form>
 
-	<!-- 테이블 아래에 위치 -->
-	<form id="paginationForm" method="get" action="/admin" style="margin-top: 20px;">
-	<label for="limit">페이지당 항목 수:</label>
-	<select name="limit" id="limit" onchange="this.form.submit();">
-		<option value="10" <%= Number(limit) === 10 ? 'selected' : '' %>>10개</option>
-		<option value="15" <%= Number(limit) === 15 ? 'selected' : '' %>>15개</option>
-		<option value="20" <%= Number(limit) === 20 ? 'selected' : '' %>>20개</option>
-		<option value="30" <%= Number(limit) === 30 ? 'selected' : '' %>>30개</option>
-	</select>
-	<input type="hidden" name="page" value="<%= currentPage %>">
-	</form>
+  <div style="margin-top: 10px;">
+    <% if (currentPage > 1) { %>
+      <a href="/admin?page=<%= currentPage - 1 %>&limit=<%= limit %>">◀ 이전</a>
+    <% } %>
 
-	<div style="margin-top: 10px;">
-	<% if (currentPage > 1) { %>
-		<a href="/admin?page=<%= currentPage - 1 %>&limit=<%= limit %>">◀ 이전</a>
-	<% } %>
+    <span style="margin: 0 10px;">페이지 <%= currentPage %> / <%= totalPages %></span>
 
-	<span style="margin: 0 10px;">페이지 <%= currentPage %> / <%= totalPages %></span>
-
-	<% if (currentPage < totalPages) { %>
-		<a href="/admin?page=<%= currentPage + 1 %>&limit=<%= limit %>">다음 ▶</a>
-	<% } %>
-	</div>
-
-	<script>
-	function showRejectReason(id) {
-		const form = document.getElementById("reject-form-" + id);
-		if (form) form.style.display = "inline-block";
-	}
-	</script>
+    <% if (currentPage < totalPages) { %>
+      <a href="/admin?page=<%= currentPage + 1 %>&limit=<%= limit %>">다음 ▶</a>
+    <% } %>
+  </div>
 
 </body>
 </html>
