@@ -32,7 +32,6 @@
 
   <script>
     const borrowData = JSON.parse('<%- borrowData %>');
-    console.log("borrowData:", borrowData); // 데이터 확인용
 
     const calendarRow = document.getElementById("calendar-row");
     const weekRange = document.getElementById("week-range");
@@ -46,6 +45,14 @@
       const m = String(date.getMonth() + 1).padStart(2, "0");
       const d = String(date.getDate()).padStart(2, "0");
       return `${y}-${m}-${d}`;
+    }
+
+    function getStatusIcon(status) {
+      switch (status) {
+        case "승인": return "✔️";
+        case "거절": return "❌";
+        default: return "⏳";
+      }
     }
 
     function renderWeek(date) {
@@ -73,15 +80,18 @@
         const td = document.createElement("td");
         td.classList.add("calendar-cell");
 
+        const 오전List = (dayData.오전 || []).map(n => `<li>${n.name} ${getStatusIcon(n.status)}</li>`).join("") || "<li>-</li>";
+        const 오후List = (dayData.오후 || []).map(n => `<li>${n.name} ${getStatusIcon(n.status)}</li>`).join("") || "<li>-</li>";
+
         td.innerHTML = `
           <div class="cell-header">${d.getMonth() + 1}월 ${d.getDate()}일</div>
           <div class="session">
             <strong>오전</strong>
-            <ul>${(dayData.오전 || []).map(n => `<li>${n}</li>`).join("") || "<li>-</li>"}</ul>
+            <ul>${오전List}</ul>
           </div>
           <div class="session">
             <strong>오후</strong>
-            <ul>${(dayData.오후 || []).map(n => `<li>${n}</li>`).join("") || "<li>-</li>"}</ul>
+            <ul>${오후List}</ul>
           </div>
         `;
 

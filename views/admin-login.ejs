@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>관리자 로그인</title>
+</head>
+<body>
+  <h1>관리자 로그인</h1>
+  <% if (error) { %><p style="color:red;"><%= error %></p><% } %>
+  <form method="POST" action="/admin/login">
+    <input type="text" name="id" placeholder="아이디" required><br>
+    <input type="password" name="password" placeholder="비밀번호" required><br>
+    <button type="submit">로그인</button>
+  </form>
+</body>
+</html>
