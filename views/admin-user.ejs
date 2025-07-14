@@ -4,136 +4,142 @@
   <meta charset="UTF-8" />
   <title><%= user.name %> 님의 상세 정보</title>
   <link rel="stylesheet" href="/public/admin_styles.css" />
-
 </head>
 <body>
 <%- include('header.ejs') %>
 <main>
-<a href="/admin">← 관리자 페이지로</a>
+  <a href="/admin">← 관리자 페이지로</a>
 
 <h1><%= user.name %> 님 상세 정보</h1>
 <p><strong>이름:</strong> <%= user.name %></p>
 <p><strong>학번:</strong> <%= user.studentId %></p>
 <p><strong>등록일:</strong> <%= new Date(user.createdAt).toLocaleString() %></p>
 
-<h2>대여 신청 기록</h2>
-<% if (reservations.length === 0) { %>
-  <p>대여 기록이 없습니다.</p>
-<% } else { %>
-  <table>
-    <thead>
-      <tr>
-        <th>날짜</th>
-        <th>시간대</th>
-        <th>상태</th>
-        <th>신청 시각</th>
-        <th>반납 시각</th>
-        <th>연체 여부</th>
-        <th>연체 누적</th>
-        <th>조치</th>
-      </tr>
-    </thead>
-    <tbody>
-
-<%
-
-  function getStatusDisplay(r) {
-    const now = new Date();
-    const reservationDate = new Date(r.date + "T00:00:00");
-    const status = r.status;
-
-    if (status === "반납완료") return "반납완료";
-
-    const isToday = now.toDateString() === reservationDate.toDateString();
-    const isFuture = reservationDate > now;
-
-    const hour = now.getHours();
-
-    if (isFuture) {
-      return "대기중";
-    }
-
-    if (r.timeSlot === "오전") {
-      if (isToday) {
-        return hour < 9 ? "대기중" : "대출중";
-      } else if (now > reservationDate) {
-        return "반납요망";
-      }
-    }
-
-    if (r.timeSlot === "오후") {
-      const nextDay = new Date(reservationDate);
-      nextDay.setDate(nextDay.getDate() + 1);
-
-      if (isToday) {
-        return hour < 13 ? "대기중" : "대출중";
-      } else if (now > nextDay) {
-        return "반납요망";
-      }
-    }
-
-    return "대출중";
-  }
-%>
-
-<% for (let i = 0; i < reservations.length; i++) { 
-    const r = reservations[i];
-    const status = getStatusDisplay(r);
-%>
-  <tr>
-    <td><%= r.date %></td>
-    <td><%= r.timeSlot %></td>
-    <td><%= status %></td>
-    <td><%= new Date(r.createdAt).toLocaleString() %></td>
-    <td><%= r.returnedAt ? new Date(r.returnedAt).toLocaleString() : '-' %></td>
-    <td><%= r.overdue ? '연체' : '정상' %></td>
-    <td><%= r.overdueCount || 0 %></td>
-    <td>
-      <% if (status === '대출중') { %>
-        <form method="POST" action="/admin/return" style="display:inline;">
-          <input type="hidden" name="id" value="<%= r._id %>">
-          <input type="hidden" name="redirectBack" value="/admin/user/<%= user.studentId %>?page=<%= currentPage %>&limit=<%= limit %>">
-          <button type="submit">반납완료</button>
-        </form>
-      <% } else if (status === '반납요망') { %>
-        <form method="POST" action="/admin/overdue" style="display:inline;">
-          <input type="hidden" name="id" value="<%= r._id %>">
-          <input type="hidden" name="redirectBack" value="/admin/user/<%= user.studentId %>?page=<%= currentPage %>&limit=<%= limit %>">
-          <button type="submit">대출연체</button>
-        </form>
-      <% } else { %>
-        -
-      <% } %>
-    </td>
-  </tr>
-<% } %>
-
-    </tbody>
-  </table>
-<% } %>
-
-<form id="paginationForm" method="get" action="/admin/user/<%= user.studentId %>" style="margin-top: 20px;">
-  <label for="limit">페이지당 항목 수:</label>
-  <select name="limit" id="limit" onchange="this.form.submit();">
-    <option value="10" <%= Number(limit) === 10 ? 'selected' : '' %>>10개</option>
-    <option value="15" <%= Number(limit) === 15 ? 'selected' : '' %>>15개</option>
-    <option value="20" <%= Number(limit) === 20 ? 'selected' : '' %>>20개</option>
-    <option value="30" <%= Number(limit) === 30 ? 'selected' : '' %>>30개</option>
-  </select>
-  <input type="hidden" name="page" value="<%= currentPage %>">
-</form>
-
-<div style="margin-top: 10px;">
-  <% if (currentPage > 1) { %>
-    <a href="/admin/user/<%= user.studentId %>?page=<%= currentPage - 1 %>&limit=<%= limit %>">◀ 이전</a>
+<p><strong>연체:</strong>
+  <% if (totalOverdue && totalOverdue > 0) { %>
+    <%= totalOverdue %>일
+  <% } else { %>
+    없음
   <% } %>
-  <span style="margin: 0 10px;">페이지 <%= currentPage %> / <%= totalPages %></span>
-  <% if (currentPage < totalPages) { %>
-    <a href="/admin/user/<%= user.studentId %>?page=<%= currentPage + 1 %>&limit=<%= limit %>">다음 ▶</a>
+</p>
+
+
+
+  <h2>대여 신청 기록</h2>
+
+  <% if (reservations.length === 0) { %>
+    <p>대여 기록이 없습니다.</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>날짜</th>
+          <th>시간대</th>
+          <th>상태</th>
+          <th>신청 시각</th>
+          <th>반납 시각</th>
+          <th>연체 여부</th>
+          <th>연체 누적</th>
+          <th>조치</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% 
+          function getStatusDisplay(r) {
+            const now = new Date();
+            const reservationDate = new Date(r.date + "T00:00:00");
+            const status = r.status;
+
+            if (status === "반납완료") return "반납완료";
+
+            const isToday = now.toDateString() === reservationDate.toDateString();
+            const isFuture = reservationDate > now;
+            const hour = now.getHours();
+
+            if (isFuture) {
+              return "대기중";
+            }
+
+            if (r.timeSlot === "오전") {
+              if (isToday) {
+                return hour < 9 ? "대기중" : "대출중";
+              } else if (now > reservationDate) {
+                return "반납요망";
+              }
+            }
+
+            if (r.timeSlot === "오후") {
+              const nextDay = new Date(reservationDate);
+              nextDay.setDate(nextDay.getDate() + 1);
+
+              if (isToday) {
+                return hour < 13 ? "대기중" : "대출중";
+              } else if (now > nextDay) {
+                return "반납요망";
+              }
+            }
+
+            return "대출중";
+          }
+        %>
+
+        <% for (let i = 0; i < reservations.length; i++) { 
+             const r = reservations[i];
+             const status = getStatusDisplay(r);
+        %>
+          <tr>
+            <td><%= r.date %></td>
+            <td><%= r.timeSlot %></td>
+            <td><%= status %></td>
+            <td><%= new Date(r.createdAt).toLocaleString() %></td>
+            <td><%= r.returnedAt ? new Date(r.returnedAt).toLocaleString() : '-' %></td>
+            <td><%= r.overdue ? '연체' : '정상' %></td>
+            <td><%= r.overdueCount || 0 %></td>
+            <td>
+              <% if (status === '대출중') { %>
+                <form method="POST" action="/admin/return" style="display:inline;">
+                  <input type="hidden" name="id" value="<%= r._id %>">
+                  <input type="hidden" name="redirectBack" value="/admin/user/<%= user.studentId %>?page=<%= currentPage %>&limit=<%= limit %>">
+                  <button type="submit">반납 확인</button>
+                </form>
+              <% } else if (status === '반납요망') { %>
+                <form method="POST" action="/admin/overdue" style="display:inline;">
+                  <input type="hidden" name="id" value="<%= r._id %>">
+                  <input type="hidden" name="redirectBack" value="/admin/user/<%= user.studentId %>?page=<%= currentPage %>&limit=<%= limit %>">
+                  <button type="submit">연체 처리</button>
+                </form>
+              <% } else { %>
+                -
+              <% } %>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
   <% } %>
-</div>
+
+  <form id="paginationForm" method="get" action="/admin/user/<%= user.studentId %>" style="margin-top: 20px;">
+    <label for="limit">페이지당 항목 수:</label>
+    <select name="limit" id="limit" onchange="this.form.submit();">
+      <option value="10" <%= Number(limit) === 10 ? 'selected' : '' %>>10개</option>
+      <option value="15" <%= Number(limit) === 15 ? 'selected' : '' %>>15개</option>
+      <option value="20" <%= Number(limit) === 20 ? 'selected' : '' %>>20개</option>
+      <option value="30" <%= Number(limit) === 30 ? 'selected' : '' %>>30개</option>
+    </select>
+    <input type="hidden" name="page" value="<%= currentPage %>">
+  </form>
+
+  <div style="margin-top: 10px;">
+    <% if (currentPage > 1) { %>
+      <a href="/admin/user/<%= user.studentId %>?page=<%= currentPage - 1 %>&limit=<%= limit %>">◀ 이전</a>
+    <% } %>
+    <span style="margin: 0 10px;">페이지 <%= currentPage %> / <%= totalPages %></span>
+    <% if (currentPage < totalPages) { %>
+      <a href="/admin/user/<%= user.studentId %>?page=<%= currentPage + 1 %>&limit=<%= limit %>">다음 ▶</a>
+    <% } %>
+  </div>
 </main>
-<%- include('footer.ejs') %>
 
+<%- include('footer.ejs') %>
 </body>
 </html>

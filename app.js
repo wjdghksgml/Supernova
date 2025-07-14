@@ -43,6 +43,38 @@ function requireAdmin(req, res, next) {
   }
 }
 
+// 연체일수 계산 함수 (app.js 최상단 or 라우트 위에)
+function calculateOverdueDays(reservations) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // 오늘 0시 기준
+
+  let totalOverdue = 0;
+
+  reservations.forEach(r => {
+    if (r.status === "반납완료") return;
+
+    let dueDate = new Date(r.date + "T00:00:00");
+
+    // 오후 대여는 다음날까지 반납 가능
+    if (r.timeSlot === "오후") {
+      dueDate.setDate(dueDate.getDate() + 1);
+    }
+
+    dueDate.setHours(0, 0, 0, 0);
+
+    const diffTime = today - dueDate;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 0) {
+      totalOverdue += diffDays;
+    }
+  });
+
+  return totalOverdue;
+}
+
+
+
 // 기본 라우트
 app.get("/", (req, res) => {
   res.render("index", {
@@ -52,18 +84,27 @@ app.get("/", (req, res) => {
 });
 app.get("/register", (req, res) => res.render("register", { error: null, name: "", studentId: "" }));
 app.get("/login", (req, res) => res.render("login", { error: null, name: "", studentId: "" }));
-app.get("/index", (req, res) => {
-  if (!req.session.userId) {
-    return res.redirect("/login");
+
+app.get("/index", async (req, res) => {
+  if (!req.session.userId) return res.redirect("/login");
+
+  try {
+    const db = await connectDB();
+    const user = await db.collection("users").findOne({ _id: new ObjectId(req.session.userId) });
+    const reservations = await db.collection("reservations").find({ studentId: user.studentId }).toArray();
+    const totalOverdue = reservations.reduce((sum, r) => sum + (r.overdueCount || 0), 0);
+
+    return res.render("index", {
+      name: req.session.userName || "",
+      isAdmin: req.session.isAdmin || false,
+      isOverdue: totalOverdue > 0,
+      overdueDays: totalOverdue,
+    });
+  } catch (err) {
+    console.error("index.ejs 로딩 오류:", err);
+    return res.status(500).send("서버 오류");
   }
-
-  // ✅ 여기서 isAdmin을 명시적으로 전달
-  res.render("index", {
-    name: req.session.userName || "",
-    isAdmin: req.session.isAdmin || false, // <- 이게 꼭 있어야 함!
-  });
 });
-
 
 app.get("/logout", (req, res) => {
   req.session.destroy(() => res.redirect("/login"));
@@ -156,6 +197,13 @@ app.post("/borrow", async (req, res) => {
     const user = await db.collection("users").findOne({ _id: new ObjectId(req.session.userId) });
     if (!user) return res.status(403).send("사용자 인증 오류");
 
+    // ✅ 연체 여부 확인
+    const reservations = await db.collection("reservations").find({ studentId: user.studentId }).toArray();
+
+    if (totalOverdue > 0) {
+      return res.send(`<script>alert('연체 기한이 ${totalOverdue}일 남았으므로, 대출이 제한됩니다.'); window.location.href = '/status';</script>`);
+    }
+
     await db.collection("reservations").insertOne({
       studentId: user.studentId,
       name: user.name,
@@ -212,27 +260,30 @@ app.get("/borrow", async (req, res) => {
     const db = await connectDB();
     const id = req.session.userId;
 
-    // 관리자 계정은 ObjectId 아님
     if (id === "admin") {
       return res.render("borrow", {
         name: "관리자",
         studentId: "000000",
-        email: "admin@example.com"
+        email: "admin@example.com",
+        isOverdue: false,
+        overdueDays: 0
       });
     }
 
-    // 일반 사용자 처리
     if (!ObjectId.isValid(id)) {
-      console.error("잘못된 ObjectId:", id);
       return res.status(400).send("잘못된 사용자 정보입니다.");
     }
 
     const user = await db.collection("users").findOne({ _id: new ObjectId(id) });
+    const reservations = await db.collection("reservations").find({ studentId: user.studentId }).toArray();
+    const totalOverdue = reservations.reduce((sum, r) => sum + (r.overdueCount || 0), 0);
 
     res.render("borrow", {
       name: user?.name || "",
       studentId: user?.studentId || "",
-      email: user?.email || ""
+      email: user?.email || "",
+      isOverdue: totalOverdue > 0,
+      overdueDays: totalOverdue
     });
   } catch (err) {
     console.error("대여 페이지 오류:", err);
@@ -373,7 +424,36 @@ app.post("/admin/overdue", requireAdmin, async (req, res) => {
   }
 });
 
-// 반납 완료 처리
+
+// 연체일 계산 함수
+function calculateOverdueDays(reservations) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // 오늘 0시 기준 초기화
+
+  let totalOverdue = 0;
+
+  reservations.forEach(r => {
+    if (r.status !== "반납완료" && r.overdue) {
+      let dueDate = new Date(r.date + "T00:00:00");
+
+      // 오후 대여는 다음날까지 반납 가능
+      if (r.timeSlot === "오후") {
+        dueDate.setDate(dueDate.getDate() + 1);
+      }
+
+      const diffTime = today - dueDate;
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays > 0) {
+        totalOverdue += diffDays;
+      }
+    }
+  });
+
+  return totalOverdue;
+}
+
+// 반납 완료 처리 라우트
 app.post("/admin/return", requireAdmin, async (req, res) => {
   const { id, redirectBack } = req.body;
 
@@ -399,12 +479,12 @@ app.post("/admin/return", requireAdmin, async (req, res) => {
       console.warn("❗ 반납 처리 실패 또는 이미 처리됨:", id);
     }
 
-    // 🔁 이전 페이지로 redirect (있으면)
+    // 이전 페이지로 리다이렉트
     if (redirectBack) {
       return res.redirect(redirectBack);
     }
 
-    // 기본: 관리자 메인으로
+    // 기본: 관리자 메인 페이지로
     res.redirect("/admin");
   } catch (err) {
     console.error("반납 처리 오류:", err);
@@ -412,39 +492,57 @@ app.post("/admin/return", requireAdmin, async (req, res) => {
   }
 });
 
-app.get('/admin/user/:studentId', requireAdmin, async (req, res) => {
+// 사용자 상세 페이지 (연체 계산 포함)
+app.get("/admin/user/:studentId", requireAdmin, async (req, res) => {
+  const studentId = req.params.studentId;
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+
   try {
     const db = await connectDB();
-    const { studentId } = req.params;
 
-    const limit = parseInt(req.query.limit, 10) || 10;
-    const currentPage = parseInt(req.query.page, 10) || 1;
+    // 유저 정보 조회
+    const user = await db.collection("users").findOne({ studentId });
+    if (!user) {
+      return res.status(404).send("사용자를 찾을 수 없습니다.");
+    }
 
-    const totalCount = await db.collection('reservations').countDocuments({ studentId });
-    const totalPages = Math.ceil(totalCount / limit);
-
-    const reservations = await db.collection('reservations')
+    // 현재 페이지 예약 조회
+    const reservations = await db.collection("reservations")
       .find({ studentId })
-      .sort({ createdAt: -1 })
-      .skip((currentPage - 1) * limit)
+      .skip((page - 1) * limit)
       .limit(limit)
       .toArray();
 
-    const user = await db.collection('users').findOne({ studentId });
-    if (!user) return res.status(404).send('사용자를 찾을 수 없습니다.');
+    // 전체 예약 개수 (페이지네이션용)
+    const totalReservations = await db.collection("reservations").countDocuments({ studentId });
+    const totalPages = Math.ceil(totalReservations / limit);
 
-    res.render('admin-user', {
+    // 전체 예약 내역 (연체 계산용)
+    const allReservations = await db.collection("reservations").find({ studentId }).toArray();
+
+    // 연체일수 계산
+    const totalOverdue = calculateOverdueDays(allReservations);
+    console.log("연체 일수 totalOverdue:", totalOverdue);
+
+
+    // 템플릿 렌더링
+    res.render("admin-user", {
       user,
       reservations,
+      currentPage: page,
       limit,
-      currentPage,
-      totalPages
+      totalPages,
+      totalOverdue
     });
+
   } catch (err) {
     console.error(err);
-    res.status(500).send('서버 오류');
+    res.status(500).send("서버 오류");
   }
 });
+
+module.exports = app;
 
 
 // 📅 대여 현황 페이지
