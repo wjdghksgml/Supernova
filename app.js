@@ -44,13 +44,27 @@ function requireAdmin(req, res, next) {
 }
 
 // 기본 라우트
-app.get("/", (req, res) => res.render("index"));
+app.get("/", (req, res) => {
+  res.render("index", {
+    name: req.session.userName || "",
+    isAdmin: req.session.isAdmin || false
+  });
+});
 app.get("/register", (req, res) => res.render("register", { error: null, name: "", studentId: "" }));
 app.get("/login", (req, res) => res.render("login", { error: null, name: "", studentId: "" }));
 app.get("/index", (req, res) => {
-  if (!req.session.userId) return res.redirect("/login");
-  res.render("index");
+  if (!req.session.userId) {
+    return res.redirect("/login");
+  }
+
+  // ✅ 여기서 isAdmin을 명시적으로 전달
+  res.render("index", {
+    name: req.session.userName || "",
+    isAdmin: req.session.isAdmin || false, // <- 이게 꼭 있어야 함!
+  });
 });
+
+
 app.get("/logout", (req, res) => {
   req.session.destroy(() => res.redirect("/login"));
 });
@@ -96,24 +110,44 @@ app.post("/register", async (req, res) => {
 // 로그인 처리
 app.post("/login", async (req, res) => {
   const { name, studentId } = req.body;
+
   if (!name || !studentId)
-    return res.render("login", { error: "이름과 학번을 모두 입력해주세요.", name, studentId });
+    return res.render("login", {
+      error: "이름과 학번을 모두 입력해주세요.",
+      name,
+      studentId
+    });
+
+  // [1] 어드민 로그인
+  if (name === "admin" && studentId === "password") {
+    req.session.userId = "admin";
+    req.session.userName = "관리자";
+    req.session.isAdmin = true; // ✅ 관리자 여부 저장
+    return res.redirect("/index"); // ✅ admin도 index로 감
+  }
 
   try {
+    // [2] 일반 사용자 로그인
     const db = await connectDB();
     const user = await db.collection("users").findOne({ studentId });
 
     if (!user || user.name !== name)
-      return res.render("login", { error: "이름 또는 학번이 일치하지 않습니다.", name: "", studentId: "" });
+      return res.render("login", {
+        error: "이름 또는 학번이 일치하지 않습니다.",
+        name: "",
+        studentId: ""
+      });
 
     req.session.userId = user._id.toString();
     req.session.userName = user.name;
+    req.session.isAdmin = false; // ✅ 일반 사용자
     res.redirect("/index");
   } catch (err) {
     console.error("로그인 오류:", err);
     res.status(500).send("서버 오류");
   }
 });
+
 
 
 
@@ -217,10 +251,19 @@ app.get("/admin/logout", (req, res) => {
   req.session.destroy(() => res.redirect("/admin/login"));
 });
 
-// app.js - 관리자 라우트 부분 수정 예시
+// 관리자 보호 미들웨어
+function requireAdmin(req, res, next) {
+  if (req.session.userId === 'admin') {
+    return next();
+  }
+  return res.status(403).send('접근 권한이 없습니다.');
+}
+
+// 관리자 페이지
 app.get("/admin", requireAdmin, async (req, res) => {
   try {
     const db = await connectDB();
+
     const limit = parseInt(req.query.limit, 10) || 10;
     const currentPage = parseInt(req.query.page, 10) || 1;
     const totalCount = await db.collection("reservations").countDocuments();
@@ -234,7 +277,7 @@ app.get("/admin", requireAdmin, async (req, res) => {
       .limit(limit)
       .toArray();
 
-    // getStatusDisplay 함수 (서버쪽에 동일하게 복사)
+    // 상태 표시 함수
     function getStatusDisplay(r) {
       const now = new Date();
       const reservationDate = new Date(r.date + "T00:00:00");
@@ -244,12 +287,9 @@ app.get("/admin", requireAdmin, async (req, res) => {
 
       const isToday = now.toDateString() === reservationDate.toDateString();
       const isFuture = reservationDate > now;
-
       const hour = now.getHours();
 
-      if (isFuture) {
-        return "대기중";
-      }
+      if (isFuture) return "대기중";
 
       if (r.timeSlot === "오전") {
         if (isToday) {
@@ -273,7 +313,7 @@ app.get("/admin", requireAdmin, async (req, res) => {
       return "대출중";
     }
 
-    // 상태 필드를 추가해서 넘김
+    // 상태 포함한 예약 데이터
     const reservations = reservationsRaw.map(r => ({
       ...r,
       statusDisplay: getStatusDisplay(r)
@@ -283,13 +323,15 @@ app.get("/admin", requireAdmin, async (req, res) => {
       reservations,
       currentPage,
       totalPages,
-      limit,
+      limit
     });
   } catch (err) {
     console.error("관리자 페이지 오류:", err);
     res.status(500).send("서버 오류");
   }
 });
+
+
 
 
 app.post("/admin/overdue", requireAdmin, async (req, res) => {
@@ -325,32 +367,26 @@ app.post("/admin/overdue", requireAdmin, async (req, res) => {
 
 // 반납 완료 처리
 app.post("/admin/return", requireAdmin, async (req, res) => {
-  const id = req.body.id;
+  const { reservationId } = req.body;
 
   try {
     const db = await connectDB();
-
     const result = await db.collection("reservations").updateOne(
-      { _id: new ObjectId(id) },
-      {
-        $set: {
-          status: "반납완료",
-          returnedAt: new Date(),
-          overdue: false
-        }
-      }
+      { _id: new ObjectId(reservationId) },
+      { $set: { status: "반납완료" } }
     );
 
-    if (result.modifiedCount === 0) {
-      return res.status(404).send("해당 예약이 존재하지 않거나 이미 반납 완료됨.");
+    if (result.modifiedCount === 1) {
+      console.log("반납 완료 처리됨:", reservationId);
     }
 
     res.redirect("/admin");
   } catch (err) {
-    console.error("반납 확인 처리 오류:", err);
+    console.error("반납 처리 오류:", err);
     res.status(500).send("서버 오류");
   }
 });
+
 
 
 app.get('/admin/user/:studentId', requireAdmin, async (req, res) => {

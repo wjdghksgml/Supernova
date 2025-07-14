@@ -21,46 +21,6 @@
 <body>
   <h1>예약 목록 (Admin)</h1>
 
-  <% 
-  function getStatusDisplay(r) {
-    const now = new Date();
-    const reservationDate = new Date(r.date + "T00:00:00");
-    const status = r.status;
-
-    if (status === "반납완료") return "반납완료";
-
-    const isToday = now.toDateString() === reservationDate.toDateString();
-    const isFuture = reservationDate > now;
-
-    const hour = now.getHours();
-
-    if (isFuture) {
-      return "대기중";
-    }
-
-    if (r.timeSlot === "오전") {
-      if (isToday) {
-        return hour < 9 ? "대기중" : "대출중";
-      } else if (now > reservationDate) {
-        return "반납요망";
-      }
-    }
-
-    if (r.timeSlot === "오후") {
-      const nextDay = new Date(reservationDate);
-      nextDay.setDate(nextDay.getDate() + 1);
-
-      if (isToday) {
-        return hour < 13 ? "대기중" : "대출중";
-      } else if (now > nextDay) {
-        return "반납요망";
-      }
-    }
-
-    return "대출중";
-  }
-  %>
-
   <table>
     <thead>
       <tr>
@@ -74,25 +34,23 @@
       </tr>
     </thead>
     <tbody>
-      <% reservations.forEach(r => { 
-          const status = getStatusDisplay(r);
-      %>
+      <% reservations.forEach(r => { %>
         <tr>
           <td><a href="/admin/user/<%= r.studentId %>"><%= r.name %></a></td>
           <td><%= r.studentId || "-" %></td>
           <td><%= r.email || "-" %></td>
           <td><%= r.date %></td>
           <td><%= r.timeSlot %></td>
-          <td><%= status %></td>
+          <td><%= r.statusDisplay %></td>
           <td>
-            <% if (status === "반납완료") { %>
+            <% if (r.statusDisplay === "반납완료") { %>
               완료
-            <% } else if (status === "반납요망") { %>
+            <% } else if (r.statusDisplay === "반납요망") { %>
               <form method="POST" action="/admin/overdue" style="margin: 0;">
                 <input type="hidden" name="id" value="<%= r._id %>">
                 <button type="submit" style="padding: 5px 10px; cursor: pointer;">연체 처리</button>
               </form>
-            <% } else if (status === "대출중") { %>
+            <% } else if (r.statusDisplay === "대출중") { %>
               <form method="POST" action="/admin/return" style="margin: 0;">
                 <input type="hidden" name="id" value="<%= r._id %>">
                 <button type="submit" style="padding: 5px 10px; cursor: pointer;">반납 확인</button>
@@ -106,6 +64,7 @@
     </tbody>
   </table>
 
+  <!-- 페이지당 항목 수 선택 -->
   <form id="paginationForm" method="get" action="/admin" style="margin-top: 20px;">
     <label for="limit">페이지당 항목 수:</label>
     <select name="limit" id="limit" onchange="this.form.submit();">
@@ -117,6 +76,7 @@
     <input type="hidden" name="page" value="<%= currentPage %>">
   </form>
 
+  <!-- 페이지네이션 -->
   <div style="margin-top: 10px;">
     <% if (currentPage > 1) { %>
       <a href="/admin?page=<%= currentPage - 1 %>&limit=<%= limit %>">◀ 이전</a>
