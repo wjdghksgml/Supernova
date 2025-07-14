@@ -6,7 +6,7 @@
 	margin: 40px auto;
 	background: white;
 	border-radius: 10px;
-	box-shadow: 0 25px 100px #ae2ee965;
+	box-shadow: 2px 2px 12px rgba(174, 46, 233, 0.3);
 	overflow-x: auto;
 }
 
@@ -24,7 +24,7 @@
 
 .calendar-header button {
 	background: white;
-	color: #4a90e2;
+	color: #ae2ee9bd;
 	border: none;
 	padding: 6px 12px;
 	border-radius: 6px;
@@ -82,7 +82,11 @@
 }
 
 .session li {
-	font-size: 15px;
+	font-size: 16px;
 	color: #333;
-	margin-bottom: 4px;
+	margin-bottom: 7px;
+}
+
+#week-range {
+	font-weight: bold;
 }
