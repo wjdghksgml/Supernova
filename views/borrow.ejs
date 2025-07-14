@@ -19,12 +19,13 @@
 					<input type="text" name="studentId" placeholder="학번" value="<%= studentId %>" />
 					<input type="email" name="email" placeholder="이메일" value="<%= email %>" />
 					<input type="date" name="date" />
-					<label for="time" hidden></label>
-					<span>수령 시간</span>
-					<select id="time" name="timeSlot" title="수령 시간">
-						<option value="오전">오프닝 전 (8:25-35)</option>
-						<option value="오후">점심시간 (12:50-1:00)</option>
-					</select>
+					<div id="forTime">
+						<select id="time" name="timeSlot" title="수령 시간">
+							<option value="" disabled selected>-- 수령 시간을 선택하세요 --</option>
+							<option value="오전">오프닝 전 (8:25~35)</option>
+							<option value="오후">점심시간 (12:50~1:00)</option>
+						</select>
+					</div>
 
 					<button type="submit">신청하기</button>
 				</form>

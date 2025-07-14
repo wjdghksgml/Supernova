@@ -97,8 +97,8 @@
         const td = document.createElement("td");
         td.classList.add("calendar-cell");
 
-        const 오전List = (dayData.오전 || []).map(n => `<li>${n.name}</li>`).join("") || "<li>-</li>";
-        const 오후List = (dayData.오후 || []).map(n => `<li>${n.name}</li>`).join("") || "<li>-</li>";
+        const 오전List = (dayData.오전 || []).map(n => `<li>${n.name}</li>`).join("") || "";
+        const 오후List = (dayData.오후 || []).map(n => `<li>${n.name}</li>`).join("") || "";
 
         td.innerHTML = `
           <div class="cell-header">${d.getMonth() + 1}월 ${d.getDate()}일</div>

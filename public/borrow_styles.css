@@ -64,6 +64,7 @@ select {
 	font-size: 14px;
 	font-family: Pretendard, sans-serif;
 	outline: none;
+	background-color: white;
 }
 
 .form-box button {
@@ -82,4 +83,32 @@ select {
 
 .form-box button:hover {
 	background-color: #7d40df;
+}
+
+#forTime {
+	height: 48px;
+	width: 288px;
+	margin-bottom: 15px;
+	border: none;
+	border-radius: 30px;
+	font-size: 14px;
+	font-family: Pretendard, sans-serif;
+	outline: none;
+	background-color: white;
+	display: flex;
+	align-items: center;
+}
+
+
+#forTime select {
+	height: 48px;
+	width: 300px;
+	flex: 3.5;
+	border: none;
+	background: transparent;
+	font-family: Pretendard, sans-serif;
+	font-size: 14px;
+	padding: 0;
+	outline: none;
+	margin: 0 20px;
 }
