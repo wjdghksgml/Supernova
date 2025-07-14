@@ -99,13 +99,6 @@ select {
 	align-items: center;
 }
 
-#forTime span {
-	flex: 1;
-	color: #000000;
-	text-align: left;
-	margin-left: 20px;
-	width: 70px;
-}
 
 #forTime select {
 	height: 48px;
@@ -117,6 +110,5 @@ select {
 	font-size: 14px;
 	padding: 0;
 	outline: none;
-	margin: 0 10px 0 0;
-
+	margin: 0 20px;
 }
