@@ -212,12 +212,30 @@ ${date}(${timeSlot}) 노트북 대여 신청이 접수되었습니다.
 });
 
 // 대여 폼 페이지
+
 app.get("/borrow", async (req, res) => {
   if (!req.session.userId) return res.redirect("/login");
 
   try {
     const db = await connectDB();
-    const user = await db.collection("users").findOne({ _id: new ObjectId(req.session.userId) });
+    const id = req.session.userId;
+
+    // 관리자 계정은 ObjectId 아님
+    if (id === "admin") {
+      return res.render("borrow", {
+        name: "관리자",
+        studentId: "000000",
+        email: "admin@example.com"
+      });
+    }
+
+    // 일반 사용자 처리
+    if (!ObjectId.isValid(id)) {
+      console.error("잘못된 ObjectId:", id);
+      return res.status(400).send("잘못된 사용자 정보입니다.");
+    }
+
+    const user = await db.collection("users").findOne({ _id: new ObjectId(id) });
 
     res.render("borrow", {
       name: user?.name || "",
@@ -229,6 +247,7 @@ app.get("/borrow", async (req, res) => {
     res.status(500).send("서버 오류");
   }
 });
+
 
 
 // 🔐 관리자 로그인
@@ -358,7 +377,6 @@ app.post("/admin/overdue", requireAdmin, async (req, res) => {
       }
     );
 
-    res.redirect(req.get('referer') || "/admin");
   } catch (err) {
     console.error(err);
     res.status(500).send("서버 오류");
@@ -379,8 +397,6 @@ app.post("/admin/return", requireAdmin, async (req, res) => {
     if (result.modifiedCount === 1) {
       console.log("반납 완료 처리됨:", reservationId);
     }
-
-    res.redirect("/admin");
   } catch (err) {
     console.error("반납 처리 오류:", err);
     res.status(500).send("서버 오류");
