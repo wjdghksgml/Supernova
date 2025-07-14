@@ -55,24 +55,41 @@ app.get("/logout", (req, res) => {
   req.session.destroy(() => res.redirect("/login"));
 });
 
-// 회원가입
+// 회원가입 처리
 app.post("/register", async (req, res) => {
-  const { name, studentId } = req.body;
-  if (!name || !studentId)
-    return res.render("register", { error: "이름과 학번을 모두 입력해주세요.", name, studentId });
+	const { name, studentId, email } = req.body;
 
-  try {
-    const db = await connectDB();
-    const existing = await db.collection("users").findOne({ studentId });
-    if (existing)
-      return res.render("register", { error: "이미 등록된 학번입니다.", name: "", studentId: "" });
+	if (!name || !studentId || !email) {
+		return res.render("register", {
+			error: "이름, 학번, 이메일을 모두 입력해주세요.",
+			name,
+			studentId,
+			email,
+		});
+	}
 
-    await db.collection("users").insertOne({ name, studentId, createdAt: new Date() });
-    res.redirect("/login");
-  } catch (err) {
-    console.error("회원가입 오류:", err);
-    res.status(500).send("서버 오류");
-  }
+	try {
+		const db = await connectDB();
+		const existing = await db.collection("users").findOne({ studentId });
+		if (existing) {
+			return res.render("register", {
+				error: "이미 등록된 학번입니다.",
+				name: "",
+				studentId: "",
+				email: "",
+			});
+		}
+		await db.collection("users").insertOne({
+			name,
+			studentId,
+			email,
+			createdAt: new Date(),
+		});
+		res.redirect("/login");
+	} catch (err) {
+		console.error("회원가입 오류:", err);
+		res.status(500).send("서버 오류");
+	}
 });
 
 // 로그인
@@ -161,10 +178,24 @@ ${date}(${timeSlot}) 노트북 대여 신청이 접수되었습니다.
 });
 
 // 대여 폼 페이지
-app.get("/borrow", (req, res) => {
+app.get("/borrow", async (req, res) => {
   if (!req.session.userId) return res.redirect("/login");
-  res.render("borrow");
+
+  try {
+    const db = await connectDB();
+    const user = await db.collection("users").findOne({ _id: new ObjectId(req.session.userId) });
+
+    res.render("borrow", {
+      name: user?.name || "",
+      studentId: user?.studentId || "",
+      email: user?.email || ""
+    });
+  } catch (err) {
+    console.error("대여 페이지 오류:", err);
+    res.status(500).send("서버 오류");
+  }
 });
+
 
 // 🔐 관리자 로그인
 app.get("/admin/login", (req, res) => {
