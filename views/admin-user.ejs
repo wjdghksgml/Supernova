@@ -108,11 +108,13 @@
       <% if (status === '대출중') { %>
         <form method="POST" action="/admin/return" style="display:inline;">
           <input type="hidden" name="id" value="<%= r._id %>">
+          <input type="hidden" name="redirectBack" value="/admin/user/<%= user.studentId %>?page=<%= currentPage %>&limit=<%= limit %>">
           <button type="submit">반납완료</button>
         </form>
       <% } else if (status === '반납요망') { %>
         <form method="POST" action="/admin/overdue" style="display:inline;">
           <input type="hidden" name="id" value="<%= r._id %>">
+          <input type="hidden" name="redirectBack" value="/admin/user/<%= user.studentId %>?page=<%= currentPage %>&limit=<%= limit %>">
           <button type="submit">대출연체</button>
         </form>
       <% } else { %>

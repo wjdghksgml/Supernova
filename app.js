@@ -118,16 +118,7 @@ app.post("/login", async (req, res) => {
       studentId
     });
 
-  // [1] 어드민 로그인
-  if (name === "admin" && studentId === "password") {
-    req.session.userId = "admin";
-    req.session.userName = "관리자";
-    req.session.isAdmin = true; // ✅ 관리자 여부 저장
-    return res.redirect("/index"); // ✅ admin도 index로 감
-  }
-
   try {
-    // [2] 일반 사용자 로그인
     const db = await connectDB();
     const user = await db.collection("users").findOne({ studentId });
 
@@ -138,16 +129,17 @@ app.post("/login", async (req, res) => {
         studentId: ""
       });
 
-    req.session.userId = user._id.toString();
+    // ✅ 세션 저장
+    req.session.userId = user._id.toString();      // ObjectId
     req.session.userName = user.name;
-    req.session.isAdmin = false; // ✅ 일반 사용자
+    req.session.isAdmin = user.name === "admin";   // 이름이 admin이면 관리자
+
     res.redirect("/index");
   } catch (err) {
     console.error("로그인 오류:", err);
     res.status(500).send("서버 오류");
   }
 });
-
 
 
 
@@ -272,11 +264,12 @@ app.get("/admin/logout", (req, res) => {
 
 // 관리자 보호 미들웨어
 function requireAdmin(req, res, next) {
-  if (req.session.userId === 'admin') {
-    return next();
+  if (req.session.isAdmin) {
+    return next(); // 관리자만 통과
   }
-  return res.status(403).send('접근 권한이 없습니다.');
+  return res.status(403).send("접근 권한이 없습니다.");
 }
+
 
 // 관리자 페이지
 app.get("/admin", requireAdmin, async (req, res) => {
@@ -385,23 +378,43 @@ app.post("/admin/overdue", requireAdmin, async (req, res) => {
 
 // 반납 완료 처리
 app.post("/admin/return", requireAdmin, async (req, res) => {
-  const { reservationId } = req.body;
+  const { id, redirectBack } = req.body;
+
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).send("잘못된 예약 ID입니다.");
+  }
 
   try {
     const db = await connectDB();
     const result = await db.collection("reservations").updateOne(
-      { _id: new ObjectId(reservationId) },
-      { $set: { status: "반납완료" } }
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          status: "반납완료",
+          returnedAt: new Date()
+        }
+      }
     );
 
     if (result.modifiedCount === 1) {
-      console.log("반납 완료 처리됨:", reservationId);
+      console.log("✅ 반납 완료 처리됨:", id);
+    } else {
+      console.warn("❗ 반납 처리 실패 또는 이미 처리됨:", id);
     }
+
+    // 🔁 이전 페이지로 redirect (있으면)
+    if (redirectBack) {
+      return res.redirect(redirectBack);
+    }
+
+    // 기본: 관리자 메인으로
+    res.redirect("/admin");
   } catch (err) {
     console.error("반납 처리 오류:", err);
     res.status(500).send("서버 오류");
   }
 });
+
 
 
 
