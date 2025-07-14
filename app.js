@@ -343,9 +343,6 @@ app.get("/admin", requireAdmin, async (req, res) => {
   }
 });
 
-
-
-
 app.post("/admin/overdue", requireAdmin, async (req, res) => {
   const reservationId = req.body.id;
 
@@ -369,7 +366,7 @@ app.post("/admin/overdue", requireAdmin, async (req, res) => {
         },
       }
     );
-
+    res.redirect("/admin");
   } catch (err) {
     console.error(err);
     res.status(500).send("서버 오류");
@@ -414,9 +411,6 @@ app.post("/admin/return", requireAdmin, async (req, res) => {
     res.status(500).send("서버 오류");
   }
 });
-
-
-
 
 app.get('/admin/user/:studentId', requireAdmin, async (req, res) => {
   try {
