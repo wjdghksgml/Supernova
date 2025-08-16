@@ -80,8 +80,8 @@ app.get("/", (req, res) => {
 		isAdmin: req.session.isAdmin || false,
 	});
 });
-app.get("/register", (req, res) => res.render("register", { error: null, name: "", studentId: "" }));
-app.get("/login", (req, res) => res.render("login", { error: null, name: "", studentId: "" }));
+app.get("/register", (req, res) => res.render("register", { error: null, name: "", studentId: "", password: "" }));
+app.get("/login", (req, res) => res.render("login", { error: null, name: "", password: "" }));
 
 app.get("/index", async (req, res) => {
 	if (!req.session.userId) return res.redirect("/login");
@@ -110,13 +110,14 @@ app.get("/logout", (req, res) => {
 
 // 회원가입 처리
 app.post("/register", async (req, res) => {
-	const { name, studentId, email } = req.body;
+	const { name, studentId, password, email } = req.body;
 
 	if (!name || !studentId || !email) {
 		return res.render("register", {
-			error: "이름, 학번, 이메일을 모두 입력해주세요.",
+			error: "이름, 학번, 비밀번호, 이메일을 모두 입력해주세요.",
 			name,
 			studentId,
+			password,
 			email,
 		});
 	}
@@ -129,12 +130,14 @@ app.post("/register", async (req, res) => {
 				error: "이미 등록된 학번입니다.",
 				name: "",
 				studentId: "",
+				password: "",
 				email: "",
 			});
 		}
 		await db.collection("users").insertOne({
 			name,
 			studentId,
+			password,
 			email,
 			createdAt: new Date(),
 		});
@@ -148,24 +151,24 @@ app.post("/register", async (req, res) => {
 // 로그인
 // 로그인 처리
 app.post("/login", async (req, res) => {
-	const { name, studentId } = req.body;
+	const { name, password } = req.body;
 
-	if (!name || !studentId)
+	if (!name || !password)
 		return res.render("login", {
-			error: "이름과 학번을 모두 입력해주세요.",
+			error: "이름과 비밀번호를 정확하게 입력해주세요.",
 			name,
-			studentId,
+			password,
 		});
 
 	try {
 		const db = await connectDB();
-		const user = await db.collection("users").findOne({ studentId });
+		const user = await db.collection("users").findOne({ password });
 
 		if (!user || user.name !== name)
 			return res.render("login", {
-				error: "이름 또는 학번이 일치하지 않습니다.",
+				error: "이름 또는 비밀번호가 일치하지 않습니다.",
 				name: "",
-				studentId: "",
+				password: "",
 			});
 
 		// ✅ 세션 저장
