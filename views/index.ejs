@@ -1,62 +1,68 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <link rel="stylesheet" href="/public/index_styles.css" />
-  <link rel="icon" type="image/x-icon" href="/public/favicon.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>노트북 대여 시스템</title>
-</head>
-<body>
-  <%- include("header.ejs") %>
+	<head>
+		<meta charset="UTF-8" />
+		<link rel="stylesheet" href="/public/index_styles.css" />
+		<link rel="icon" type="image/x-icon" href="/public/favicon.png" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>노트북 대여 시스템</title>
+	</head>
+	<body>
+		<%- include("header.ejs") %>
 
-  <main class="dashboard">
-    <a href="/borrow" id="borrowLink" class="card-container">
-      <div class="card">
-        <h2>✅ 노트북 대여하기</h2>
-        <p>사용 가능한 노트북을 보고 바로 신청할 수 있어요.</p>
-      </div>
-    </a>
+		<main class="dashboard">
+			<a href="/borrow" id="borrowLink" class="card-container">
+				<div class="card">
+					<h2>✅ 노트북 대여하기</h2>
+					<p>사용 가능한 노트북을 보고 바로 신청할 수 있어요.</p>
+				</div>
+			</a>
 
-    <a href="/status" class="card-container">
-      <div class="card">
-        <h2>🧾 대여 현황 확인</h2>
-        <p>현재 대여 중인 노트북과 반납 일정을 확인해요.</p>
-      </div>
-    </a>
+			<a href="/status" class="card-container">
+				<div class="card">
+					<h2>🧾 대여 현황 확인</h2>
+					<p>현재 대여 중인 노트북과 반납 일정을 확인해요.</p>
+				</div>
+			</a>
 
-    <a href="/contact" class="card-container">
-      <div class="card">
-        <h2>📞 문의하기</h2>
-        <p>고장 신고나 문의를 간단하게 보낼 수 있어요.</p>
-      </div>
-    </a>
+			<a href="/mentoring" class="card-container">
+				<div class="card">
+					<h2>📚 멘토링 인증</h2>
+					<p>멘토링 실행 현황을 인증합니다.</p>
+				</div>
+			</a>
 
-    <% if (isAdmin) { %>
-    <a href="/admin" class="card-container">
-      <div class="card">
-        <h2>🔨 관리자 페이지</h2>
-        <p>관리자 권한이 있는 사람이 프로그램 관리를 진행합니다.</p>
-      </div>
-    </a>
-    <% } %>
-  </main>
+			<a href="/contact" class="card-container">
+				<div class="card">
+					<h2>📞 문의하기</h2>
+					<p>고장 신고나 문의를 간단하게 보낼 수 있어요.</p>
+				</div>
+			</a>
 
-  <script>
-    const isOverdue = <%- typeof isOverdue !== "undefined" ? JSON.stringify(isOverdue) : 'false' %>;
-    const overdueDays = <%- typeof overdueDays !== "undefined" ? JSON.stringify(overdueDays) : '0' %>;
+			<% if (isAdmin) { %>
+			<a href="/admin" class="card-container">
+				<div class="card">
+					<h2>🔨 관리자 페이지</h2>
+					<p>관리자 권한이 있는 사람이 프로그램 관리를 진행합니다.</p>
+				</div>
+			</a>
+			<% } %>
+		</main>
 
-    const borrowLink = document.getElementById("borrowLink");
-    if (borrowLink) {
-      borrowLink.addEventListener("click", function (e) {
-        if (isOverdue) {
-          e.preventDefault();
-          alert(`연체 기한이 ${overdueDays}일 남았으므로, 대출이 제한됩니다.`);
-        }
-      });
-    }
-  </script>
-å
-  <%- include("footer.ejs") %>
-</body>
+		<script>
+			const isOverdue = <%- typeof isOverdue !== "undefined" ? JSON.stringify(isOverdue) : 'false' %>;
+			const overdueDays = <%- typeof overdueDays !== "undefined" ? JSON.stringify(overdueDays) : '0' %>;
+
+			const borrowLink = document.getElementById("borrowLink");
+			if (borrowLink) {
+			  borrowLink.addEventListener("click", function (e) {
+			    if (isOverdue) {
+			      e.preventDefault();
+			      alert(`연체 기한이 ${overdueDays}일 남았으므로, 대출이 제한됩니다.`);
+			    }
+			  });
+			}
+		</script>
+		<%- include("footer.ejs") %>
+	</body>
 </html>

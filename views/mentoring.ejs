@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+	<head>
+		<meta charset="UTF-8" />
+		<title>멘토링 인증</title>
+		<link rel="stylesheet" href="/public/mentoring_styles.css" />
+		<link rel="icon" type="image/x-icon" href="/public/favicon.png" />
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	</head>
+	<body>
+		<%- include("header.ejs") %>
+
+		<div class="form-wrapper">
+			<div class="form-box">
+				<div class="icon">💻</div>
+				<h2>대여 신청</h2>
+				<form action="/borrow" method="POST">
+					<div id="forMethod">
+						<select id="method" name="method" title="온라인/오프라인">
+							<option value="" disabled selected>-- 멘토링 방법을 선택하세요 --</option>
+							<option value="온라인">온라인</option>
+							<option value="오프라인">오프라인</option>
+						</select>
+					</div>
+
+					<input type="number" name="teamNumber" placeholder="팀 번호" value="<%= teamNumber %>" min="1" max="50" />
+
+					<input type="date" name="date" id="date" />
+
+					<div id="forTime">
+						<select id="time" name="timeSlot" title="멘토링 시간">
+							<option value="" disabled selected>-- 멘토링 진행 시간을 선택하세요 --</option>
+							<option value="2030">20~30분</option>
+							<option value="3040">30~40분</option>
+							<option value="4050">40~50분</option>
+							<option value="5060">50~60분</option>
+							<option value="6000">1시간 이상</option>
+						</select>
+					</div>
+
+					<button type="submit">신청하기</button>
+				</form>
+			</div>
+		</div>
+
+		<%- include("footer.ejs") %>
+
+		<script>
+			function getTomorrowDate() {
+				const today = new Date();
+				today.setDate(today.getDate() + 1);
+				const year = today.getFullYear();
+				const month = String(today.getMonth() + 1).padStart(2, "0");
+				const day = String(today.getDate()).padStart(2, "0");
+				return `${year}-${month}-${day}`;
+			}
+
+			document.addEventListener("DOMContentLoaded", function () {
+				const dateInput = document.getElementById("date");
+				dateInput.min = getTomorrowDate();
+			});
+
+			// 유효성 검사
+			document.querySelector("form").addEventListener("submit", function (e) {
+				const teamNumber = parseInt(document.querySelector('input[name="teamNumber"]').value.trim());
+				const email = document.querySelector('input[name="email"]').value.trim();
+				const date = document.querySelector('input[name="date"]').value;
+				const timeSlot = document.querySelector('select[name="timeSlot"]').value;
+
+				if (!teamNumber || teamNumber < 1 || teamNumber > 50 || !date || !timeSlot) {
+					e.preventDefault();
+					Swal.fire({
+						icon: "error",
+						title: "WARNING!",
+						text: "모든 항목을 빠짐없이 정확하게 입력해주세요.",
+					});
+				}
+			});
+		</script>
+	</body>
+</html>

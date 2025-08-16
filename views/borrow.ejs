@@ -1,71 +1,90 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-	<meta charset="UTF-8" />
-	<title>노트북 대여 신청</title>
-	<link rel="stylesheet" href="/public/borrow_styles.css" />
-	<link rel="icon" type="image/x-icon" href="/public/favicon.png" />
-	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</head>
-<body>
-	<%- include("header.ejs") %>
+	<head>
+		<meta charset="UTF-8" />
+		<title>노트북 대여 신청</title>
+		<link rel="stylesheet" href="/public/borrow_styles.css" />
+		<link rel="icon" type="image/x-icon" href="/public/favicon.png" />
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	</head>
+	<body>
+		<%- include("header.ejs") %>
 
-	<div class="form-wrapper">
-		<div class="form-box">
-			<div class="icon">💻</div>
-			<h2>대여 신청</h2>
-			<form action="/borrow" method="POST">
-				<input type="text" name="name" placeholder="이름" value="<%= name %>" />
-				<input type="text" name="studentId" placeholder="학번" value="<%= studentId %>" />
-				<input type="email" name="email" placeholder="이메일" value="<%= email %>" />
-				<input type="date" name="date" id="date" />
-				<div id="forTime">
-					<select id="time" name="timeSlot" title="수령 시간">
-						<option value="" disabled selected>-- 수령 시간을 선택하세요 --</option>
-						<option value="오전">오프닝 전 (8:25~35)</option>
-						<option value="오후">점심시간 (12:50~1:00)</option>
-					</select>
-				</div>
-				<button type="submit">신청하기</button>
-			</form>
+		<div class="form-wrapper">
+			<div class="form-box">
+				<div class="icon">💻</div>
+				<h2>대여 신청</h2>
+				<form action="/borrow" method="POST">
+					<input type="text" name="name" placeholder="이름" value="<%= name %>" />
+					<input type="text" name="studentId" placeholder="학번" value="<%= studentId %>" />
+					<input type="email" name="email" placeholder="이메일" value="<%= email %>" />
+					<input type="date" name="date" id="date" />
+					<div id="forTime">
+						<select id="time" name="timeSlot" title="수령 시간">
+							<option value="" disabled selected>-- 수령 시간을 선택하세요 --</option>
+							<option value="오전">오프닝 전 (8:25~35)</option>
+							<option value="오후">점심시간 (12:50~1:00)</option>
+						</select>
+					</div>
+					<button type="submit">신청하기</button>
+				</form>
+			</div>
 		</div>
-	</div>
 
-	<%- include("footer.ejs") %>
-
-	<script>
-		// 오늘 날짜를 YYYY-MM-DD 형식으로 반환
-		function getTodayDate() {
-			const today = new Date();
-			const year = today.getFullYear();
-			const month = String(today.getMonth() + 1).padStart(2, '0');
-			const day = String(today.getDate()).padStart(2, '0');
-			return `${year}-${month}-${day}`;
-		}
-
-		// 페이지 로딩 시 오늘 이전 날짜 선택 불가 설정
-		document.addEventListener("DOMContentLoaded", function () {
-			const dateInput = document.getElementById("date");
-			dateInput.min = getTommorowDate();
-		});
-
-		// 유효성 검사
-		document.querySelector("form").addEventListener("submit", function (e) {
-			const name = document.querySelector('input[name="name"]').value.trim();
-			const studentId = document.querySelector('input[name="studentId"]').value.trim();
-			const email = document.querySelector('input[name="email"]').value.trim();
-			const date = document.querySelector('input[name="date"]').value;
-			const timeSlot = document.querySelector('select[name="timeSlot"]').value;
-
-			if (!name || !studentId || !email || !date || !timeSlot) {
-				e.preventDefault();
-				Swal.fire({
-					icon: "error",
-					title: "WARNING!",
-					text: "모든 항목을 빠짐없이 입력해주세요.",
-				});
+		<%- include("footer.ejs") %>
+		<script>
+			// 오늘 날짜를 YYYY-MM-DD 형식으로 반환
+			function getTodayDate() {
+				const today = new Date();
+				const year = today.getFullYear();
+				const month = String(today.getMonth() + 1).padStart(2, "0");
+				const day = String(today.getDate()).padStart(2, "0");
+				return `${year}-${month}-${day}`;
 			}
-		});
-	</script>
-</body>
+
+			// 페이지 로딩 시 오늘 이전 날짜 선택 불가 설정
+			document.addEventListener("DOMContentLoaded", function () {
+				const dateInput = document.getElementById("date");
+				// 오늘은 선택 불가, 내일부터 선택 가능
+				const today = getTodayDate();
+				const tomorrow = new Date();
+				tomorrow.setDate(tomorrow.getDate() + 1);
+				const year = tomorrow.getFullYear();
+				const month = String(tomorrow.getMonth() + 1).padStart(2, "0");
+				const day = String(tomorrow.getDate()).padStart(2, "0");
+				dateInput.min = `${year}-${month}-${day}`;
+			});
+
+			// 유효성 검사
+			document.querySelector("form").addEventListener("submit", function (e) {
+				const name = document.querySelector('input[name="name"]').value.trim();
+				const studentId = document.querySelector('input[name="studentId"]').value.trim();
+				const email = document.querySelector('input[name="email"]').value.trim();
+				const date = document.querySelector('input[name="date"]').value;
+				const timeSlot = document.querySelector('select[name="timeSlot"]').value;
+
+				if (!name || !studentId || !email || !date || !timeSlot) {
+					e.preventDefault();
+					Swal.fire({
+						icon: "error",
+						title: "WARNING!",
+						text: "모든 항목을 빠짐없이 입력해주세요.",
+					});
+					return;
+				}
+
+				// 오늘 날짜 신청 차단
+				const today = getTodayDate();
+				if (date === today) {
+					e.preventDefault();
+					Swal.fire({
+						icon: "error",
+						title: "신청 불가",
+						text: "당일 신청은 불가합니다.",
+					});
+					return;
+				}
+			});
+		</script>
+	</body>
 </html>
