@@ -184,7 +184,7 @@ app.post("/login", async (req, res) => {
 });
 
 app.post("/borrow", async (req, res) => {
-	if (!req.session.userId) return res.redirect("/login");
+	if (!req.session.userId) return res.redirect("/loginnn");
 
 	const { date, timeSlot, email } = req.body;
 	// if (!date || !timeSlot || !email) {
@@ -254,7 +254,7 @@ ${date}(${timeSlot}) 노트북 대여 신청이 접수되었습니다.
 // 대여 폼 페이지
 
 app.get("/borrow", async (req, res) => {
-	if (!req.session.userId) return res.redirect("/login");
+	if (!req.session.userId) return res.redirect("/loginnn");
 
 	try {
 		const db = await connectDB();
@@ -316,7 +316,7 @@ function requireAdmin(req, res, next) {
 	if (req.session.isAdmin) {
 		return next(); // 관리자만 통과
 	}
-	return res.status(403).send("접근 권한이 없습니다.");
+	return res.status(403).render("forbidden"); // forbidden.ejs 파일을 만들고 아래 스크립트를 넣음
 }
 
 // 관리자 페이지
@@ -596,7 +596,7 @@ app.post("/contact", async (req, res) => {
 });
 
 app.get("/mentoring", (req, res) => {
-	if (!req.session.userId) return res.redirect("/login");
+	if (!req.session.userId) return res.redirect("/loginnn");
 
 	const teamNumber = req.session.userName || "";
 	const email = req.session.email || "";

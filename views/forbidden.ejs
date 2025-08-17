@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ko">
+	<head>
+		<meta charset="UTF-8" />
+		<title>접근 제한</title>
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	</head>
+	<body>
+		<script>
+			Swal.fire({
+				icon: "error",
+				title: "접근 불가",
+				text: "Admin 권한이 필요합니다.",
+				confirmButtonText: "확인",
+			}).then((result) => {
+				if (result.isConfirmed) {
+					window.location.href = "/login"; // 로그인 페이지 URL
+				}
+			});
+		</script>
+	</body>
+</html>
