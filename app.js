@@ -607,6 +607,10 @@ app.get("/mentoring", (req, res) => {
 // 멘토링 신청 POST 처리
 app.post("/mentoring", async (req, res) => {});
 
+app.get("/adminnn", requireAdmin, async (req, res) => {
+	res.render("adminnn", {});
+});
+
 // 404 처리
 const viewsDir = path.join(__dirname, "views");
 const allowedPages = fs
