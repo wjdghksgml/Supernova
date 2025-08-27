@@ -12,12 +12,12 @@
 
 		<div class="form-wrapper">
 			<div class="form-box">
-				<div class="icon">💻</div>
-				<h2>대여 신청</h2>
-				<form action="/borrow" method="POST">
+				<a class="icon" href="/" style="text-decoration: none">αω</a>
+				<h2>멘토링 인증</h2>
+				<form action="/mentoring" method="POST">
 					<div id="forMethod">
 						<select id="method" name="method" title="온라인/오프라인">
-							<option value="" disabled selected>-- 멘토링 방법을 선택하세요 --</option>
+							<option value="" disabled selected>-- 멘토링 방법 선택 --</option>
 							<option value="온라인">온라인</option>
 							<option value="오프라인">오프라인</option>
 						</select>
@@ -26,16 +26,13 @@
 					<input type="number" name="teamNumber" placeholder="팀 번호" value="<%= teamNumber %>" min="1" max="50" />
 
 					<input type="date" name="date" id="date" />
-
 					<div id="forTime">
-						<select id="time" name="timeSlot" title="멘토링 시간">
-							<option value="" disabled selected>-- 멘토링 진행 시간을 선택하세요 --</option>
-							<option value="0000">패스</option>
-							<option value="2030">20~30분</option>
-							<option value="3040">30~40분</option>
-							<option value="4050">40~50분</option>
-							<option value="5060">50~60분</option>
-							<option value="6000">1시간 이상</option>
+						<select id="time" name="status" title="멘토링 진행 여부">
+							<option value="" disabled selected>-- 멘토링 진행 여부 --</option>
+							<option value="진행완료">진행완료</option>
+							<option value="미진행">미진행</option>
+							<option value="패스">패스</option>
+							<option value="패스(자율)">패스(자율)</option>
 						</select>
 					</div>
 
@@ -47,34 +44,32 @@
 		<%- include("footer.ejs") %>
 
 		<script>
-			function getTomorrowDate() {
-				const today = new Date();
-				today.setDate(today.getDate() + 1);
-				const year = today.getFullYear();
-				const month = String(today.getMonth() + 1).padStart(2, "0");
-				const day = String(today.getDate()).padStart(2, "0");
-				return `${year}-${month}-${day}`;
-			}
-
-			// document.addEventListener("DOMContentLoaded", function () {
-			// 	const dateInput = document.getElementById("date");
-			// 	dateInput.min = getTomorrowDate();
-			// });
-
 			// 유효성 검사
 			document.querySelector("form").addEventListener("submit", function (e) {
+				const method = document.querySelector('select[name="method"]').value;
 				const teamNumber = parseInt(document.querySelector('input[name="teamNumber"]').value.trim());
-				const email = document.querySelector('input[name="email"]').value.trim();
 				const date = document.querySelector('input[name="date"]').value;
-				const timeSlot = document.querySelector('select[name="timeSlot"]').value;
+				const status = document.querySelector('select[name="status"]').value;
 
-				if (!teamNumber || teamNumber < 1 || teamNumber > 50 || !date || !timeSlot) {
+				if (!method || !teamNumber || teamNumber < 1 || teamNumber > 50 || !date || !status) {
 					e.preventDefault();
 					Swal.fire({
 						icon: "error",
 						title: "WARNING!",
 						text: "모든 항목을 빠짐없이 정확하게 입력해주세요.",
 					});
+				}
+				return;
+			});
+			Swal.fire({
+				icon: "success",
+				title: `멘토링 인증 완료!`,
+				html: `${method} ${teamNumber}팀의 멘토링 인증을 완료했습니다.
+    `,
+			}).then((result) => {
+				if (result.isConfirmed) {
+					// 확인 버튼 클릭 시 리디렉트
+					window.location.href = "/index";
 				}
 			});
 		</script>

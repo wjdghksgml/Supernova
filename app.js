@@ -595,20 +595,93 @@ app.post("/contact", async (req, res) => {
 	}
 });
 
+// GET 요청 - 폼 렌더링
 app.get("/mentoring", (req, res) => {
 	if (!req.session.userId) return res.redirect("/loginnn");
+	res.render("mentoring", { teamNumber: "" });
+});
 
-	const teamNumber = req.session.userName || "";
-	const email = req.session.email || "";
+// POST 요청 - 폼 제출 처리
+app.post("/mentoring", async (req, res) => {
+	if (!req.session.userId) {
+		return res.redirect("/loginnn"); // 로그인 페이지 URL로 변경
+	}
 
-	res.render("mentoring", { teamNumber, email });
+	const { method, teamNumber, date, status } = req.body;
+
+	if (!method || !teamNumber || teamNumber < 1 || teamNumber > 50 || !date || !status) {
+		return res.status(400).send("모든 항목을 입력해주세요.");
+	}
+
+	try {
+		const db = await connectDB();
+
+		// DB 저장
+		await db.collection("mentoring").insertOne({
+			method,
+			teamNumber: Number(teamNumber),
+			status,
+			date,
+			createdAt: new Date(),
+		});
+	} catch (err) {
+		console.error(err);
+		res.status(500).send("서버 에러 발생");
+	}
+});
+
+app.get("/newmentoring", (req, res) => {
+	if (!req.session.userId) return res.redirect("/loginnn");
+	res.render("newmentoring");
 });
 
 // 멘토링 신청 POST 처리
-app.post("/mentoring", async (req, res) => {});
+app.post("/newmentoring", async (req, res) => {
+	if (!req.session.userId) {
+		return res.redirect("/loginnn"); // 로그인 페이지 URL로 변경
+	}
+
+	const { mentor, mentee, subject, day, method, semester, teamNumber } = req.body;
+
+	if (!mentor || !mentee || !subject || !day || !method || !semester || !teamNumber) {
+		return res.status(400).send("모든 항목을 입력해주세요.");
+	}
+
+	try {
+		const db = await connectDB();
+
+		// DB 저장
+		await db.collection("newmentoring").insertOne({
+			mentor,
+			mentee,
+			subject,
+			day,
+			method,
+			semester,
+			teamNumber: Number(teamNumber),
+			createdAt: new Date(),
+		});
+
+		// res.redirect("/index");
+	} catch (err) {
+		console.error("멘토링 등록 오류:", err);
+		res.status(500).send("서버 오류");
+	}
+});
 
 app.get("/adminnn", requireAdmin, async (req, res) => {
-	res.render("adminnn", {});
+	try {
+		const db = await connectDB();
+
+		// mentoring 컬렉션에서 모든 데이터 불러오기
+		const mentoring = await db.collection("mentoring").find().toArray();
+
+		// EJS에 mentoring 데이터 전달
+		res.render("adminnn", { mentoring });
+	} catch (err) {
+		console.error("adminnn 페이지 오류:", err);
+		res.status(500).send("서버 오류");
+	}
 });
 
 // 404 처리

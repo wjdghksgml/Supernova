@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+	<head>
+		<meta charset="UTF-8" />
+		<title>관리자 페이지 - 멘토링 관리</title>
+		<link rel="stylesheet" href="/public/adminnn_styles.css" />
+	</head>
+	<body>
+		<%- include('header.ejs') %>
+		<main>
+			<h1>멘토링 진행 목록</h1>
+
+			<button onclick="window.location.href='/newmentoring'">멘토링 추가</button>
+			<table>
+				<thead>
+					<tr>
+						<th>조 이름</th>
+						<th>과목</th>
+						<th>멘토</th>
+						<th>멘티</th>
+						<% for (let week = 1; week <= 20; week++) { %>
+						<th><%= week %>주차</th>
+						<% } %>
+					</tr>
+				</thead>
+
+				<tbody>
+					<% mentoring.forEach(m => { %>
+					<tr>
+						<td><%= m.groupName %></td>
+						<td><%= m.subject %></td>
+						<td><%= m.mentor %></td>
+						<td><%= m.mentee %></td>
+
+						<% for (let week = 1; week <= 20; week++) { %>
+						<td>
+							<% let status = m[`week${week}`]; if (status === "done") { %>
+							<span class="status-done">✅ 진행완료</span>
+							<% } else if (status === "miss") { %>
+							<span class="status-miss">❌ 미진행</span>
+							<% } else if (status === "pass") { %>
+							<span class="status-pass">⏭ 패스</span>
+							<% } else if (status === "free") { %>
+							<span class="status-free">🌀 패스(자율)</span>
+							<% } else { %> - <% } %>
+						</td>
+						<% } %>
+					</tr>
+					<% }); %>
+				</tbody>
+			</table>
+		</main>
+		<%- include('footer.ejs') %>
+	</body>
+</html>

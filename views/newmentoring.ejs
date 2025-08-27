@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+	<head>
+		<meta charset="UTF-8" />
+		<title>신규 멘토링 생성</title>
+		<link rel="stylesheet" href="/public/newmentoring_styles.css" />
+		<link rel="icon" type="image/x-icon" href="/public/favicon.png" />
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	</head>
+	<body>
+		<%- include("header.ejs") %>
+
+		<div class="form-wrapper">
+			<div class="form-box">
+				<a class="icon" href="/" style="text-decoration: none">αω</a>
+				<h2>신규 멘토링 생성</h2>
+				<form id="mentoringForm" action="/newmentoring" method="POST">
+					<div id="forMethod">
+						<select name="method" id="method" required>
+							<option value="" disabled selected>-- 멘토링 방법 선택 --</option>
+							<option value="온라인">온라인</option>
+							<option value="오프라인">오프라인</option>
+						</select>
+					</div>
+					<input type="number" name="teamNumber" placeholder="팀 번호" required />
+					<input type="text" name="mentor" placeholder="멘토 이름" required />
+					<input type="text" name="mentee" placeholder="멘티 이름" required />
+					<input type="text" name="subject" placeholder="멘토링 과목" required />
+					<div id="forDay">
+						<select name="day" id="day" required>
+							<option value="" disabled selected>-- 멘토링 요일 선택 --</option>
+							<option value="월요일">월요일</option>
+							<option value="화요일">화요일</option>
+							<option value="수요일">수요일</option>
+							<option value="목요일">목요일</option>
+							<option value="금요일">금요일</option>
+							<option value="토요일">토요일</option>
+							<option value="일요일">일요일</option>
+							<option value="미정">미정</option>
+						</select>
+					</div>
+
+					<button type="submit">생성하기</button>
+				</form>
+			</div>
+		</div>
+
+		<%- include("footer.ejs") %>
+		<script>
+			document.getElementById("mentoringForm").addEventListener("submit", function (e) {
+				e.preventDefault(); // 기본 제출 막기
+
+				const mentee = document.querySelector('input[name="mentee"]').value.trim();
+				const mentor = document.querySelector('input[name="mentor"]').value.trim();
+				const subject = document.querySelector('input[name="subject"]').value.trim();
+				const method = document.getElementById("method").value;
+				const teamNumber = document.querySelector('input[name="teamNumber"]').value.trim();
+				// 학기 계산
+				const today = new Date();
+				const month = today.getMonth() + 1; // 0~11이므로 +1
+				const year = today.getFullYear();
+				let semester;
+				if (month >= 1 && month <= 6) {
+					semester = `${year}SS`;
+				} else {
+					semester = `${year}FW`;
+				}
+
+				if (!mentee || !mentor || !subject || !method || !teamNumber) {
+					Swal.fire({
+						icon: "error",
+						title: "WARNING!",
+						text: "모든 항목을 입력해주세요.",
+					});
+					return;
+				}
+
+				Swal.fire({
+					icon: "success",
+					title: `${method} ${teamNumber}팀의 멘토링이 시작되었습니다.`,
+					html: `
+        학습과목: ${subject} <br>
+        멘토: ${mentor} <br>
+        멘티: ${mentee} <br>
+        학기: ${semester}
+    `,
+					customClass: {
+						title: "swal-title-sm",
+					},
+				}).then((result) => {
+					if (result.isConfirmed) {
+						// 확인 버튼 클릭 시 리디렉트
+						window.location.href = "/adminnn";
+					}
+				});
+
+				// 서버 전송 시 hidden input으로 학기 전달 가능
+				const semesterInput = document.createElement("input");
+				semesterInput.type = "hidden";
+				semesterInput.name = "semester";
+				semesterInput.value = semester;
+				this.appendChild(semesterInput);
+
+				// 실제 서버 전송
+				this.submit();
+			});
+		</script>
+	</body>
+</html>

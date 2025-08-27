@@ -1,0 +1,55 @@
+@import url("base.css");
+
+html,
+body {
+	height: 100%;
+	margin: 0;
+}
+
+main {
+	margin: 2%;
+}
+
+h1 {
+	font-size: 2em;
+	margin: 20px 0;
+}
+
+h2 {
+	font-size: 1.5em;
+	color: #555;
+	margin: 15px 0;
+}
+table {
+	width: 100%;
+	border-collapse: collapse;
+}
+th,
+td {
+	border: 1px solid #aaa;
+	padding: 8px;
+	text-align: center;
+}
+th {
+	background-color: #ddd;
+}
+
+p {
+	margin: 10px 0;
+}
+.status-done {
+	color: green;
+	font-weight: bold;
+}
+.status-miss {
+	color: red;
+	font-weight: bold;
+}
+.status-pass {
+	color: orange;
+	font-weight: bold;
+}
+.status-free {
+	color: blue;
+	font-weight: bold;
+}

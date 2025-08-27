@@ -1,0 +1,118 @@
+@import url("base.css");
+
+body,
+html {
+	height: 100%;
+	margin: 0;
+}
+
+.form-wrapper {
+	display: flex;
+	justify-content: center; /* 가로 중앙 */
+	align-items: center; /* 세로 중앙 */
+	height: 100vh; /* 뷰포트 높이 전체 */
+}
+
+.form-box {
+	background: linear-gradient(to bottom right, rgba(212, 185, 233, 0.425), rgba(217, 164, 255, 0.623));
+	border: 2px solid rgba(255, 255, 255, 0.3);
+	padding: 40px;
+	border-radius: 20px;
+	box-shadow: 0 50px 500px #ae2ee965;
+	text-align: center;
+	width: 280px;
+	height: auto; /* 높이는 유동적으로 */
+	position: relative;
+	backdrop-filter: blur(2px);
+	bottom: 10%;
+}
+
+.form-box .icon {
+	position: absolute;
+	top: -35px;
+	left: calc(50% - 35px);
+	width: 70px;
+	height: 70px;
+	background: #ae2ee9;
+	border-radius: 50%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: white;
+	font-size: 30px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.form-box h2 {
+	margin: 10px;
+	margin-bottom: 20px;
+	font-size: 28px;
+	color: rgba(255, 255, 255);
+	font-weight: 700;
+	text-shadow: 1.5px 1.5px 3px rgba(0, 0, 0, 0.2);
+}
+
+.form-box input,
+label,
+select {
+	height: 24px;
+	width: 240px;
+	padding: 12px 24px;
+	margin-bottom: 15px;
+	border: none;
+	border-radius: 30px;
+	font-size: 14px;
+	font-family: Pretendard, sans-serif;
+	outline: none;
+	background-color: white;
+}
+
+.form-box button {
+	width: 276px;
+	padding: 12px;
+	margin-top: 20px;
+	background-color: #ae2ee9;
+	color: white;
+	border: none;
+	border-radius: 30px;
+	font-size: 16px;
+	font-weight: bold;
+	cursor: pointer;
+	transition: background-color 0.3s;
+}
+
+.form-box button:hover {
+	background-color: #7d40df;
+}
+
+#forDay,
+#forMethod {
+	height: 48px;
+	width: 288px;
+	margin-bottom: 15px;
+	border: none;
+	border-radius: 30px;
+	font-size: 14px;
+	font-family: Pretendard, sans-serif;
+	outline: none;
+	background-color: white;
+	display: flex;
+	align-items: center;
+}
+
+#forDay select,
+#forMethod select {
+	height: 48px;
+	width: 300px;
+	flex: 3.5;
+	border: none;
+	background: transparent;
+	font-family: Pretendard, sans-serif;
+	font-size: 14px;
+	padding: 0;
+	outline: none;
+	margin: 0 20px;
+}
+.swal-title-sm {
+	font-size: 24px !important; /* 기본보다 작게 설정 */
+}
