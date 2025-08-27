@@ -546,13 +546,17 @@ app.get("/status", async (req, res) => {
 		const reservations = await db.collection("reservations").find({}).toArray();
 
 		const borrowData = {};
+
 		for (const r of reservations) {
+			if (!r.date || !r.timeSlot) continue; // date/timeSlot 없으면 스킵
+
 			const dateKey = r.date;
-			const time = r.timeSlot;
+			const time = r.timeSlot === "오전" || r.timeSlot === "오후" ? r.timeSlot : "오전"; // 잘못된 timeSlot 기본값
+
 			if (!borrowData[dateKey]) borrowData[dateKey] = { 오전: [], 오후: [] };
 
 			borrowData[dateKey][time].push({
-				name: r.name,
+				name: r.name || "이름 없음",
 				status: r.status || "대기중",
 			});
 		}
@@ -673,11 +677,80 @@ app.get("/adminnn", requireAdmin, async (req, res) => {
 	try {
 		const db = await connectDB();
 
-		// mentoring 컬렉션에서 모든 데이터 불러오기
-		const mentoring = await db.collection("mentoring").find().toArray();
+		// 1️⃣ DB에서 데이터 가져오기
+		const newMentorings = await db.collection("newmentoring").find().toArray();
 
-		// EJS에 mentoring 데이터 전달
-		res.render("adminnn", { mentoring });
+		const allMentorings = await db.collection("mentoring").find().toArray();
+
+		// 2️⃣ 날짜 변환 함수
+		function parseDateKST(dateStr) {
+			const [year, month, day] = dateStr.split("-").map(Number);
+			return new Date(year, month - 1, day);
+		}
+
+		// 3️⃣ 주차 계산 함수
+		function calculateWeek(startDateStr, targetDateStr) {
+			const startDate = parseDateKST(startDateStr);
+			const targetDate = parseDateKST(targetDateStr);
+
+			const diffTime = targetDate - startDate;
+			const diffWeeks = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7)) + 1;
+
+			if (diffWeeks < 1) return 1;
+			if (diffWeeks > 20) return 20;
+			return diffWeeks;
+		}
+
+		// 4️⃣ allMentorings 정렬 + sequence 매기기
+		allMentorings.sort((a, b) => {
+			const dateDiff = parseDateKST(a.date) - parseDateKST(b.date);
+			if (dateDiff !== 0) return dateDiff;
+			// date가 같으면 createdAt 기준으로
+			return new Date(a.createdAt) - new Date(b.createdAt);
+		});
+		allMentorings.forEach((item, index) => {
+			item.sequence = index + 1;
+		});
+
+		// 5️⃣ newmentoring + mentoring 상태 합치기
+		const mentoringData = newMentorings.map((group) => {
+			const weekStatus = {};
+			for (let i = 1; i <= 20; i++) weekStatus[`week${i}`] = null;
+
+			// 관련 멘토링 필터링
+			let relatedMentorings = allMentorings.filter(
+				(m) => Number(m.teamNumber) === Number(group.teamNumber) && String(m.method).trim() === String(group.method).trim()
+			);
+
+			// sequence 순서대로 정렬
+			relatedMentorings.sort((a, b) => a.sequence - b.sequence);
+
+			// sequence 기준으로 weekN에 status 채우기
+			relatedMentorings.forEach((m) => {
+				const weekKey = `week${m.sequence}`;
+				if (weekKey <= "week20") {
+					// 20주까지만
+					weekStatus[weekKey] = m.status;
+				}
+			});
+
+			const teamLabel = `${group.method} ${group.teamNumber}조`;
+
+			return {
+				groupName: teamLabel,
+				subject: group.subject,
+				mentor: group.mentor,
+				mentee: group.mentee,
+				semester: group.semester,
+				...weekStatus,
+			};
+		});
+
+		// 페이지 제목
+		const semesters = [...new Set(mentoringData.map((g) => g.semester))];
+		const pageTitle = semesters.length === 1 ? `멘토링 관리 - ${semesters[0]}` : `멘토링 관리 - 여러 학기`;
+
+		res.render("adminnn", { mentoring: mentoringData, pageTitle });
 	} catch (err) {
 		console.error("adminnn 페이지 오류:", err);
 		res.status(500).send("서버 오류");

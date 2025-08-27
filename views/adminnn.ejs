@@ -2,13 +2,13 @@
 <html lang="ko">
 	<head>
 		<meta charset="UTF-8" />
-		<title>관리자 페이지 - 멘토링 관리</title>
+		<title><%= pageTitle %></title>
 		<link rel="stylesheet" href="/public/adminnn_styles.css" />
 	</head>
 	<body>
 		<%- include('header.ejs') %>
 		<main>
-			<h1>멘토링 진행 목록</h1>
+			<h1><%= pageTitle %></h1>
 
 			<button onclick="window.location.href='/newmentoring'">멘토링 추가</button>
 			<table>
@@ -32,17 +32,10 @@
 						<td><%= m.mentor %></td>
 						<td><%= m.mentee %></td>
 
-						<% for (let week = 1; week <= 20; week++) { %>
+						<% for (let week = 1; week <= 20; week++) { const status = m[`week${week}`]; %>
 						<td>
-							<% let status = m[`week${week}`]; if (status === "done") { %>
-							<span class="status-done">✅ 진행완료</span>
-							<% } else if (status === "miss") { %>
-							<span class="status-miss">❌ 미진행</span>
-							<% } else if (status === "pass") { %>
-							<span class="status-pass">⏭ 패스</span>
-							<% } else if (status === "free") { %>
-							<span class="status-free">🌀 패스(자율)</span>
-							<% } else { %> - <% } %>
+							<% if (status === "패스") { %> ⏭️ <% } else if (status === "패스(자율)") { %> 😎 <% } else if (status === "미진행") { %> ❌ <% } else if (status
+							=== "진행완료") { %> ✅ <% } else { %> - <% } %>
 						</td>
 						<% } %>
 					</tr>

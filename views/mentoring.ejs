@@ -59,18 +59,18 @@
 						text: "모든 항목을 빠짐없이 정확하게 입력해주세요.",
 					});
 				}
-				return;
-			});
-			Swal.fire({
-				icon: "success",
-				title: `멘토링 인증 완료!`,
-				html: `${method} ${teamNumber}팀의 멘토링 인증을 완료했습니다.
+
+				Swal.fire({
+					icon: "success",
+					title: `멘토링 인증 완료!`,
+					html: `${method} ${teamNumber}팀의 멘토링 인증을 완료했습니다.
     `,
-			}).then((result) => {
-				if (result.isConfirmed) {
-					// 확인 버튼 클릭 시 리디렉트
-					window.location.href = "/index";
-				}
+				}).then((result) => {
+					if (result.isConfirmed) {
+						// 확인 버튼 클릭 시 리디렉트
+						window.location.href = "/index";
+					}
+				});
 			});
 		</script>
 	</body>
